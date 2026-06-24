@@ -1,0 +1,49 @@
+# Java bytecode
+*.class
+
+# Packages
+*.jar
+*.war
+*.ear
+
+# Compiled output
+/out/
+/target/
+/build/
+/dist/
+/lib/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+/.project
+/.classpath
+/.settings/
+
+# Maven/Gradle
+/.mvn/
+/.gradle/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+*.tmp
+*.temp
+*.swp
+
+# Application data and databases
+/banking_data/
+*.db
+*.dat
+
+# Other
+*.class
+
+# Keep local env files out
+.env
