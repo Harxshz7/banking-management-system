@@ -8,7 +8,9 @@ import java.util.UUID;
 public class Account implements Serializable {
     private static final long serialVersionUID = 2L;
 
-    public enum AccountType { SAVINGS, CHECKING, FIXED_DEPOSIT }
+    public enum AccountType {
+        SAVINGS, CHECKING, FIXED_DEPOSIT
+    }
 
     private String id;
     private String accountNumber;
@@ -16,9 +18,9 @@ public class Account implements Serializable {
     private AccountType type;
     private double balance;
     private double minimumBalance;
-    private double interestRate;          // Annual % e.g. 3.5
-    private double dailyWithdrawalLimit;  // Max per day
-    private double todayWithdrawn;        // Reset daily
+    private double interestRate; // Annual % e.g. 3.5
+    private double dailyWithdrawalLimit; // Max per day
+    private double todayWithdrawn; // Reset daily
     private LocalDate lastResetDate;
     private LocalDateTime createdAt;
     private boolean active;
@@ -54,14 +56,14 @@ public class Account implements Serializable {
             case FIXED_DEPOSIT -> {
                 this.interestRate = 7.0;
                 this.minimumBalance = initialBalance; // Locked amount
-                this.dailyWithdrawalLimit = 0.0;      // No withdrawals on FD
+                this.dailyWithdrawalLimit = 0.0; // No withdrawals on FD
                 this.fdMaturityDate = LocalDateTime.now().plusYears(1);
             }
         }
     }
 
     private String generateAccountNumber() {
-        long num = (long)(Math.random() * 9_000_000_000L) + 1_000_000_000L;
+        long num = (long) (Math.random() * 9_000_000_000L) + 1_000_000_000L;
         return String.valueOf(num);
     }
 
@@ -76,14 +78,18 @@ public class Account implements Serializable {
     // ===== BANKING OPERATIONS =====
 
     public void deposit(double amount) {
-        if (amount > 0) this.balance += amount;
+        if (amount > 0)
+            this.balance += amount;
     }
 
     /** Returns null on success, or error message string */
     public String tryWithdraw(double amount) {
-        if (frozen) return "Account is frozen. Please contact the bank.";
-        if (type == AccountType.FIXED_DEPOSIT) return "Withdrawals are not allowed on Fixed Deposit accounts.";
-        if (amount <= 0) return "Amount must be greater than zero.";
+        if (frozen)
+            return "Account is frozen. Please contact the bank.";
+        if (type == AccountType.FIXED_DEPOSIT)
+            return "Withdrawals are not allowed on Fixed Deposit accounts.";
+        if (amount <= 0)
+            return "Amount must be greater than zero.";
         if (balance - amount < minimumBalance)
             return String.format("Minimum balance of $%,.2f must be maintained. Available: $%,.2f",
                     minimumBalance, balance - minimumBalance);
@@ -93,7 +99,8 @@ public class Account implements Serializable {
             return String.format("Daily withdrawal limit of $%,.2f exceeded. Remaining today: $%,.2f",
                     dailyWithdrawalLimit, dailyWithdrawalLimit - todayWithdrawn);
 
-        if (balance < amount) return "Insufficient balance.";
+        if (balance < amount)
+            return "Insufficient balance.";
 
         balance -= amount;
         todayWithdrawn += amount;
@@ -121,41 +128,124 @@ public class Account implements Serializable {
     }
 
     // ===== GETTERS =====
-    public String getId() { return id; }
-    public String getAccountNumber() { return accountNumber; }
-    public String getUserId() { return userId; }
-    public AccountType getType() { return type; }
-    public double getBalance() { return balance; }
-    public double getMinimumBalance() { return minimumBalance; }
-    public double getInterestRate() { return interestRate; }
-    public double getDailyWithdrawalLimit() { return dailyWithdrawalLimit; }
+    public String getId() {
+        return id;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public AccountType getType() {
+        return type;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public double getMinimumBalance() {
+        return minimumBalance;
+    }
+
+    public double getInterestRate() {
+        return interestRate;
+    }
+
+    public double getDailyWithdrawalLimit() {
+        return dailyWithdrawalLimit;
+    }
+
     public double getAvailableWithdrawal() {
         checkDailyReset();
         return dailyWithdrawalLimit > 0 ? dailyWithdrawalLimit - todayWithdrawn : 0;
     }
-    public double getTodayWithdrawn() { checkDailyReset(); return todayWithdrawn; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public boolean isActive() { return active; }
-    public boolean isFrozen() { return frozen; }
-    public String getDescription() { return description; }
-    public LocalDateTime getFdMaturityDate() { return fdMaturityDate; }
+
+    public double getTodayWithdrawn() {
+        checkDailyReset();
+        return todayWithdrawn;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public boolean isFrozen() {
+        return frozen;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDateTime getFdMaturityDate() {
+        return fdMaturityDate;
+    }
+
+    public void setFdMaturityDate(LocalDateTime fdMaturityDate) {
+        this.fdMaturityDate = fdMaturityDate;
+    }
+
+    public double getFixedDepositMaturityAmount() {
+        if (type != AccountType.FIXED_DEPOSIT)
+            return balance;
+        double years = fdMaturityDate == null ? 1.0
+                : Math.max(1.0,
+                        (double) java.time.Duration.between(createdAt, fdMaturityDate).toDays() / 365.0);
+        return balance + (balance * (interestRate / 100.0) * years);
+    }
 
     // ===== SETTERS =====
-    public void setBalance(double balance) { this.balance = balance; }
-    public void setActive(boolean active) { this.active = active; }
-    public void setFrozen(boolean frozen) { this.frozen = frozen; }
-    public void setDescription(String description) { this.description = description; }
-    public void setInterestRate(double interestRate) { this.interestRate = interestRate; }
-    public void setMinimumBalance(double minimumBalance) { this.minimumBalance = minimumBalance; }
-    public void setDailyWithdrawalLimit(double limit) { this.dailyWithdrawalLimit = limit; }
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public void setFrozen(boolean frozen) {
+        this.frozen = frozen;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setInterestRate(double interestRate) {
+        this.interestRate = interestRate;
+    }
+
+    public void setMinimumBalance(double minimumBalance) {
+        this.minimumBalance = minimumBalance;
+    }
+
+    public void setDailyWithdrawalLimit(double limit) {
+        this.dailyWithdrawalLimit = limit;
+    }
 
     // ===== DISPLAY HELPERS =====
-    public String getFormattedBalance() { return String.format("$%,.2f", balance); }
-    public String getTypeDisplay() { return type.name().replace("_", " "); }
+    public String getFormattedBalance() {
+        return String.format("$%,.2f", balance);
+    }
+
+    public String getTypeDisplay() {
+        return type.name().replace("_", " ");
+    }
 
     public String getStatusDisplay() {
-        if (!active) return "Closed";
-        if (frozen) return "Frozen";
+        if (!active)
+            return "Closed";
+        if (frozen)
+            return "Frozen";
         return "Active";
     }
 
