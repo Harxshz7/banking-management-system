@@ -17,7 +17,7 @@ for /r "src" %%f in (*.java) do (
     set FILES=!FILES! "%%f"
 )
 
-javac -encoding UTF-8 -d out !FILES!
+javac --release 25 -encoding UTF-8 -d out !FILES!
 
 if %ERRORLEVEL% EQU 0 (
     echo.
