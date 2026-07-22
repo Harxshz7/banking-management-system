@@ -18,11 +18,19 @@ public class StyledTextField extends JTextField {
         setForeground(Theme.TEXT_PRIMARY);
         setCaretColor(Theme.ACCENT_BLUE);
         setBackground(Theme.BG_INPUT);
-        setPreferredSize(new Dimension(getPreferredSize().width, 42));
+        setMargin(new Insets(18, 14, 10, 14));
+        setPreferredSize(new Dimension(getPreferredSize().width, 48));
 
         addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) { focused = true; repaint(); }
-            public void focusLost(FocusEvent e)   { focused = false; repaint(); }
+            public void focusGained(FocusEvent e) {
+                focused = true;
+                repaint();
+            }
+
+            public void focusLost(FocusEvent e) {
+                focused = false;
+                repaint();
+            }
         });
     }
 
@@ -44,8 +52,14 @@ public class StyledTextField extends JTextField {
 
         super.paintComponent(g);
 
-        // Placeholder
-        if (getText().isEmpty() && !isFocusOwner()) {
+        // Floating label
+        if (focused || !getText().isEmpty()) {
+            Graphics2D labelG = (Graphics2D) g.create();
+            labelG.setFont(Theme.FONT_SMALL);
+            labelG.setColor(focused ? Theme.ACCENT_BLUE : Theme.TEXT_SECONDARY);
+            labelG.drawString(placeholder, 14, 14);
+            labelG.dispose();
+        } else {
             Graphics2D pg = (Graphics2D) g.create();
             pg.setFont(Theme.FONT_BODY);
             pg.setColor(Theme.TEXT_MUTED);
@@ -56,5 +70,6 @@ public class StyledTextField extends JTextField {
     }
 
     @Override
-    public void paintBorder(Graphics g) { /* Handled in paintComponent */ }
+    public void paintBorder(Graphics g) {
+        /* Handled in paintComponent */ }
 }

@@ -64,40 +64,45 @@ public class AdminDashboard extends JFrame {
                 g2.drawLine(getWidth() - 1, 0, getWidth() - 1, getHeight());
             }
         };
-        sidebar.setPreferredSize(new Dimension(230, 0));
+        sidebar.setPreferredSize(new Dimension(240, 0));
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setOpaque(false);
-        sidebar.setBorder(BorderFactory.createEmptyBorder(22, 16, 22, 16));
+        sidebar.setOpaque(true);
+        sidebar.setBackground(Theme.ACCENT_NAVY);
+        sidebar.setBorder(BorderFactory.createEmptyBorder(24, 18, 24, 18));
 
         JLabel logo = new JLabel("🏦 BankPro");
         logo.setFont(Theme.FONT_HEADING);
-        logo.setForeground(Theme.TEXT_PRIMARY);
+        logo.setForeground(Color.WHITE);
         logo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel badge = new JLabel("  ADMIN PANEL");
         badge.setFont(new Font("Segoe UI", Font.BOLD, 10));
-        badge.setForeground(Theme.ACCENT_PURPLE);
+        badge.setForeground(Theme.ACCENT_ORANGE);
         badge.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel userLabel = new JLabel("👑 " + authService.getCurrentUser().getFullName());
         userLabel.setFont(Theme.FONT_SMALL);
-        userLabel.setForeground(Theme.ACCENT_TEAL);
+        userLabel.setForeground(Theme.BG_SURFACE);
         userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JSeparator sep = new JSeparator();
         sep.setForeground(Theme.BORDER);
         sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
 
-        sidebar.add(logo); sidebar.add(Box.createVerticalStrut(2));
-        sidebar.add(badge); sidebar.add(Box.createVerticalStrut(4));
-        sidebar.add(userLabel); sidebar.add(Box.createVerticalStrut(16));
-        sidebar.add(sep); sidebar.add(Box.createVerticalStrut(16));
+        sidebar.add(logo);
+        sidebar.add(Box.createVerticalStrut(2));
+        sidebar.add(badge);
+        sidebar.add(Box.createVerticalStrut(4));
+        sidebar.add(userLabel);
+        sidebar.add(Box.createVerticalStrut(16));
+        sidebar.add(sep);
+        sidebar.add(Box.createVerticalStrut(16));
 
         String[][] navItems = {
-            {"📊", "Overview", "OVERVIEW"},
-            {"👥", "Manage Users", "USERS"},
-            {"💳", "All Accounts", "ACCOUNTS"},
-            {"📋", "All Transactions", "TRANSACTIONS"},
+                { "📊", "Overview", "OVERVIEW" },
+                { "👥", "Manage Users", "USERS" },
+                { "💳", "All Accounts", "ACCOUNTS" },
+                { "📋", "All Transactions", "TRANSACTIONS" },
         };
 
         for (String[] item : navItems) {
@@ -126,27 +131,32 @@ public class AdminDashboard extends JFrame {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 if (getModel().isRollover()) {
-                    g2.setColor(Theme.BG_HOVER);
-                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                    g2.setColor(Theme.alpha(Color.WHITE, 25));
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 }
                 g2.dispose();
                 super.paintComponent(g);
             }
         };
-        btn.setOpaque(false); btn.setContentAreaFilled(false);
-        btn.setBorderPainted(false); btn.setFocusPainted(false);
+        btn.setOpaque(false);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setFont(Theme.FONT_BODY);
-        btn.setForeground(Theme.TEXT_SECONDARY);
+        btn.setForeground(Color.WHITE);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
         btn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
         btn.addActionListener(e -> {
             contentLayout.show(mainContent, panel);
-            if (panel.equals("USERS")) refreshUsersTable();
-            else if (panel.equals("ACCOUNTS")) refreshAccountsTable();
-            else if (panel.equals("TRANSACTIONS")) refreshTransactionsTable();
+            if (panel.equals("USERS"))
+                refreshUsersTable();
+            else if (panel.equals("ACCOUNTS"))
+                refreshAccountsTable();
+            else if (panel.equals("TRANSACTIONS"))
+                refreshTransactionsTable();
         });
         return btn;
     }
@@ -172,9 +182,12 @@ public class AdminDashboard extends JFrame {
 
         JPanel stats = new JPanel(new GridLayout(2, 2, 16, 16));
         stats.setOpaque(false);
-        stats.add(buildStatCard("👥 Total Customers", String.valueOf(totalUsers), Theme.ACCENT_BLUE, "Registered users"));
-        stats.add(buildStatCard("💳 Active Accounts", String.valueOf(activeAccounts), Theme.ACCENT_PURPLE, "Open accounts"));
-        stats.add(buildStatCard("💰 Total Assets", String.format("$%,.2f", totalAssets), Theme.SUCCESS, "All deposits"));
+        stats.add(
+                buildStatCard("👥 Total Customers", String.valueOf(totalUsers), Theme.ACCENT_BLUE, "Registered users"));
+        stats.add(buildStatCard("💳 Active Accounts", String.valueOf(activeAccounts), Theme.ACCENT_ORANGE,
+                "Open accounts"));
+        stats.add(
+                buildStatCard("💰 Total Assets", String.format("$%,.2f", totalAssets), Theme.SUCCESS, "All deposits"));
         stats.add(buildStatCard("📋 Total Transactions", String.valueOf(totalTxns), Theme.ACCENT_TEAL, "All time"));
 
         // Recent activity
@@ -182,9 +195,11 @@ public class AdminDashboard extends JFrame {
         recentTitle.setFont(Theme.FONT_HEADING);
         recentTitle.setForeground(Theme.TEXT_PRIMARY);
 
-        String[] cols = {"Time", "User", "Type", "Amount"};
+        String[] cols = { "Time", "User", "Type", "Amount" };
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         JTable table = buildStyledTable(model);
 
@@ -194,11 +209,11 @@ public class AdminDashboard extends JFrame {
 
         for (Transaction tx : recent) {
             User u = dm.findUserById(tx.getUserId()).orElse(null);
-            model.addRow(new Object[]{
-                tx.getFormattedTimestamp(),
-                u != null ? u.getFullName() : "Unknown",
-                tx.getType().name().replace("_", " "),
-                tx.getFormattedAmount()
+            model.addRow(new Object[] {
+                    tx.getFormattedTimestamp(),
+                    u != null ? u.getFullName() : "Unknown",
+                    tx.getType().name().replace("_", " "),
+                    tx.getFormattedAmount()
             });
         }
 
@@ -236,8 +251,11 @@ public class AdminDashboard extends JFrame {
         subLbl.setFont(Theme.FONT_SMALL);
         subLbl.setForeground(Theme.TEXT_MUTED);
 
-        card.add(lbl); card.add(Box.createVerticalStrut(8));
-        card.add(val); card.add(Box.createVerticalStrut(4)); card.add(subLbl);
+        card.add(lbl);
+        card.add(Box.createVerticalStrut(8));
+        card.add(val);
+        card.add(Box.createVerticalStrut(4));
+        card.add(subLbl);
         return card;
     }
 
@@ -280,22 +298,36 @@ public class AdminDashboard extends JFrame {
             boolean ok = authService.register(u, p, name, em, ph);
             if (ok) {
                 showMsg("Customer added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                nameField.setText(""); uField.setText(""); pField.setText("");
-                eField.setText(""); phField.setText("");
+                nameField.setText("");
+                uField.setText("");
+                pField.setText("");
+                eField.setText("");
+                phField.setText("");
                 refreshUsersTable();
             } else {
                 showMsg("Username already exists.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        addCard.add(new JLabel("Add:") {{ setForeground(Theme.TEXT_SECONDARY); setFont(Theme.FONT_SUBHEAD); }});
-        addCard.add(nameField); addCard.add(uField); addCard.add(pField);
-        addCard.add(eField); addCard.add(phField); addCard.add(addBtn);
+        addCard.add(new JLabel("Add:") {
+            {
+                setForeground(Theme.TEXT_SECONDARY);
+                setFont(Theme.FONT_SUBHEAD);
+            }
+        });
+        addCard.add(nameField);
+        addCard.add(uField);
+        addCard.add(pField);
+        addCard.add(eField);
+        addCard.add(phField);
+        addCard.add(addBtn);
 
         // Table
-        String[] cols = {"ID", "Full Name", "Username", "Email", "Phone", "Role", "Status", "Created"};
+        String[] cols = { "ID", "Full Name", "Username", "Email", "Phone", "Role", "Status", "Created" };
         usersModel = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         JTable table = buildStyledTable(usersModel);
 
@@ -307,21 +339,32 @@ public class AdminDashboard extends JFrame {
         deleteBtn.setFocusPainted(false);
         deleteBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
-            if (row < 0) { showMsg("Select a user to delete.", "Info", JOptionPane.INFORMATION_MESSAGE); return; }
+            if (row < 0) {
+                showMsg("Select a user to delete.", "Info", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
             String uid = (String) usersModel.getValueAt(row, 0);
             String role = (String) usersModel.getValueAt(row, 5);
-            if ("ADMIN".equals(role)) { showMsg("Cannot delete admin accounts.", "Error", JOptionPane.ERROR_MESSAGE); return; }
+            if ("ADMIN".equals(role)) {
+                showMsg("Cannot delete admin accounts.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             int conf = JOptionPane.showConfirmDialog(this, "Delete this user and all their data?",
                     "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (conf == JOptionPane.YES_OPTION) { dm.deleteUser(uid); refreshUsersTable(); }
+            if (conf == JOptionPane.YES_OPTION) {
+                dm.deleteUser(uid);
+                refreshUsersTable();
+            }
         });
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBackground(Theme.BG_DARK); scroll.getViewport().setBackground(Theme.BG_SURFACE);
+        scroll.setBackground(Theme.BG_DARK);
+        scroll.getViewport().setBackground(Theme.BG_SURFACE);
         scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnRow.setOpaque(false); btnRow.add(deleteBtn);
+        btnRow.setOpaque(false);
+        btnRow.add(deleteBtn);
 
         panel.add(title, BorderLayout.NORTH);
         panel.add(addCard, BorderLayout.CENTER);
@@ -337,13 +380,14 @@ public class AdminDashboard extends JFrame {
     }
 
     private void refreshUsersTable() {
-        if (usersModel == null) return;
+        if (usersModel == null)
+            return;
         usersModel.setRowCount(0);
         for (User u : dm.getAllUsers()) {
-            usersModel.addRow(new Object[]{
-                u.getId(), u.getFullName(), u.getUsername(), u.getEmail(),
-                u.getPhone(), u.getRole(), u.isActive() ? "Active" : "Inactive",
-                u.getCreatedAt().toLocalDate()
+            usersModel.addRow(new Object[] {
+                    u.getId(), u.getFullName(), u.getUsername(), u.getEmail(),
+                    u.getPhone(), u.getRole(), u.isActive() ? "Active" : "Inactive",
+                    u.getCreatedAt().toLocalDate()
             });
         }
     }
@@ -358,20 +402,25 @@ public class AdminDashboard extends JFrame {
         title.setFont(Theme.FONT_TITLE);
         title.setForeground(Theme.TEXT_PRIMARY);
 
-        String[] cols = {"Account No", "Owner", "Type", "Balance", "Status", "Opened"};
+        String[] cols = { "Account No", "Owner", "Type", "Balance", "Status", "Opened" };
         accountsModel = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         JTable table = buildStyledTable(accountsModel);
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBackground(Theme.BG_DARK); scroll.getViewport().setBackground(Theme.BG_SURFACE);
+        scroll.setBackground(Theme.BG_DARK);
+        scroll.getViewport().setBackground(Theme.BG_SURFACE);
         scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
         GradientButton refreshBtn = new GradientButton("🔄 Refresh");
         refreshBtn.addActionListener(e -> refreshAccountsTable());
         JPanel top = new JPanel(new BorderLayout());
-        top.setOpaque(false); top.add(title, BorderLayout.WEST); top.add(refreshBtn, BorderLayout.EAST);
+        top.setOpaque(false);
+        top.add(title, BorderLayout.WEST);
+        top.add(refreshBtn, BorderLayout.EAST);
 
         panel.add(top, BorderLayout.NORTH);
         panel.add(scroll, BorderLayout.CENTER);
@@ -380,16 +429,17 @@ public class AdminDashboard extends JFrame {
     }
 
     private void refreshAccountsTable() {
-        if (accountsModel == null) return;
+        if (accountsModel == null)
+            return;
         accountsModel.setRowCount(0);
         for (Account acc : bankingService.getAllAccounts()) {
             User u = dm.findUserById(acc.getUserId()).orElse(null);
-            accountsModel.addRow(new Object[]{
-                acc.getAccountNumber(),
-                u != null ? u.getFullName() : "Unknown",
-                acc.getTypeDisplay(), acc.getFormattedBalance(),
-                acc.isActive() ? "Active" : "Closed",
-                acc.getCreatedAt().toLocalDate()
+            accountsModel.addRow(new Object[] {
+                    acc.getAccountNumber(),
+                    u != null ? u.getFullName() : "Unknown",
+                    acc.getTypeDisplay(), acc.getFormattedBalance(),
+                    acc.isActive() ? "Active" : "Closed",
+                    acc.getCreatedAt().toLocalDate()
             });
         }
     }
@@ -404,9 +454,11 @@ public class AdminDashboard extends JFrame {
         title.setFont(Theme.FONT_TITLE);
         title.setForeground(Theme.TEXT_PRIMARY);
 
-        String[] cols = {"Date & Time", "Account No", "Customer", "Type", "Amount", "Balance After", "Description"};
+        String[] cols = { "Date & Time", "Account No", "Customer", "Type", "Amount", "Balance After", "Description" };
         transactionsModel = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
         JTable table = buildStyledTable(transactionsModel);
         // Color amounts
@@ -423,19 +475,23 @@ public class AdminDashboard extends JFrame {
                     setForeground(v.startsWith("+") ? Theme.SUCCESS : Theme.DANGER);
                     setFont(Theme.FONT_SUBHEAD);
                 }
-                if (isSelected) setBackground(Theme.BG_HOVER);
+                if (isSelected)
+                    setBackground(Theme.BG_HOVER);
                 return c;
             }
         });
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBackground(Theme.BG_DARK); scroll.getViewport().setBackground(Theme.BG_SURFACE);
+        scroll.setBackground(Theme.BG_DARK);
+        scroll.getViewport().setBackground(Theme.BG_SURFACE);
         scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
         GradientButton refreshBtn = new GradientButton("🔄 Refresh");
         refreshBtn.addActionListener(e -> refreshTransactionsTable());
         JPanel top = new JPanel(new BorderLayout());
-        top.setOpaque(false); top.add(title, BorderLayout.WEST); top.add(refreshBtn, BorderLayout.EAST);
+        top.setOpaque(false);
+        top.add(title, BorderLayout.WEST);
+        top.add(refreshBtn, BorderLayout.EAST);
 
         panel.add(top, BorderLayout.NORTH);
         panel.add(scroll, BorderLayout.CENTER);
@@ -444,7 +500,8 @@ public class AdminDashboard extends JFrame {
     }
 
     private void refreshTransactionsTable() {
-        if (transactionsModel == null) return;
+        if (transactionsModel == null)
+            return;
         transactionsModel.setRowCount(0);
         List<Transaction> txns = bankingService.getAllTransactions().stream()
                 .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()))
@@ -453,14 +510,14 @@ public class AdminDashboard extends JFrame {
         for (Transaction tx : txns) {
             Account acc = dm.findAccountById(tx.getAccountId()).orElse(null);
             User u = dm.findUserById(tx.getUserId()).orElse(null);
-            transactionsModel.addRow(new Object[]{
-                tx.getFormattedTimestamp(),
-                acc != null ? acc.getAccountNumber() : "N/A",
-                u != null ? u.getFullName() : "Unknown",
-                tx.getType().name().replace("_", " "),
-                tx.getFormattedAmount(),
-                String.format("$%,.2f", tx.getBalanceAfter()),
-                tx.getDescription()
+            transactionsModel.addRow(new Object[] {
+                    tx.getFormattedTimestamp(),
+                    acc != null ? acc.getAccountNumber() : "N/A",
+                    u != null ? u.getFullName() : "Unknown",
+                    tx.getType().name().replace("_", " "),
+                    tx.getFormattedAmount(),
+                    String.format("$%,.2f", tx.getBalanceAfter()),
+                    tx.getDescription()
             });
         }
     }
@@ -488,7 +545,8 @@ public class AdminDashboard extends JFrame {
                 setBackground(row % 2 == 0 ? Theme.BG_SURFACE : Theme.BG_CARD);
                 setForeground(Theme.TEXT_PRIMARY);
                 setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
-                if (isSelected) setBackground(Theme.BG_HOVER);
+                if (isSelected)
+                    setBackground(Theme.BG_HOVER);
                 return c;
             }
         });

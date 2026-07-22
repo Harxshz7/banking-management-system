@@ -17,12 +17,20 @@ public class StyledPasswordField extends JPasswordField {
         setForeground(Theme.TEXT_PRIMARY);
         setCaretColor(Theme.ACCENT_BLUE);
         setBackground(Theme.BG_INPUT);
+        setMargin(new Insets(18, 14, 10, 14));
         setEchoChar('●');
-        setPreferredSize(new Dimension(getPreferredSize().width, 42));
+        setPreferredSize(new Dimension(getPreferredSize().width, 48));
 
         addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent e) { focused = true; repaint(); }
-            public void focusLost(java.awt.event.FocusEvent e)   { focused = false; repaint(); }
+            public void focusGained(java.awt.event.FocusEvent e) {
+                focused = true;
+                repaint();
+            }
+
+            public void focusLost(java.awt.event.FocusEvent e) {
+                focused = false;
+                repaint();
+            }
         });
     }
 
@@ -39,7 +47,13 @@ public class StyledPasswordField extends JPasswordField {
         g2.dispose();
         super.paintComponent(g);
 
-        if (getPassword().length == 0 && !isFocusOwner()) {
+        if (focused || getPassword().length > 0) {
+            Graphics2D labelG = (Graphics2D) g.create();
+            labelG.setFont(Theme.FONT_SMALL);
+            labelG.setColor(focused ? Theme.ACCENT_BLUE : Theme.TEXT_SECONDARY);
+            labelG.drawString(placeholder, 14, 14);
+            labelG.dispose();
+        } else {
             Graphics2D pg = (Graphics2D) g.create();
             pg.setFont(Theme.FONT_BODY);
             pg.setColor(Theme.TEXT_MUTED);
@@ -50,5 +64,6 @@ public class StyledPasswordField extends JPasswordField {
     }
 
     @Override
-    public void paintBorder(Graphics g) {}
+    public void paintBorder(Graphics g) {
+    }
 }

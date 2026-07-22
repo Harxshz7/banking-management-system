@@ -1,5 +1,5 @@
 # 🏦 BankPro — Banking Management System
-> A premium Java Swing desktop banking application with dark UI, persistent storage, and full banking features.
+> A premium Java Swing desktop banking application with modern banking UI, persistent storage, and full banking features.
 
 ---
 
@@ -37,8 +37,8 @@ java -cp out banking.Main
 ## ✨ Features
 
 ### Customer Portal
-- 🏠 **Dashboard** — Total balance overview, account summary cards
-- 💳 **My Accounts** — Create Savings/Checking/Fixed Deposit accounts, close accounts
+- 🏠 **Dashboard** — Total balance overview, account summary cards, and quick insights
+- 💳 **My Accounts** — Create Savings/Checking/Fixed Deposit accounts, close accounts, and view account details
 - 💰 **Deposit** — Deposit funds into any account with optional notes
 - 🏧 **Withdraw** — Withdraw funds with balance validation
 - ↔️ **Transfer** — Transfer money to any account by account number
@@ -96,3 +96,19 @@ Data persists across sessions automatically.
 - **UI**: Java Swing (custom-rendered components)
 - **Storage**: Java Object Serialization
 - **Design**: Dark theme, gradient buttons, glassmorphism cards
+
+---
+
+## ✨ UI/UX Improvements
+- Modern navy-to-teal theme with crisp contrast and polished component styling
+- Refreshed login screen with floating labels, refined form fields, and improved spacing
+- Redesigned customer and admin dashboards for better card layouts, sidebar navigation, and quick insights
+- Consistent visual language across buttons, inputs, cards, dialogs, and headers
+- Preserved all existing banking business logic, transaction flow, and persistence behavior
+
+## 📷 Screenshots
+> Replace these placeholders with actual screenshots from the refreshed app.
+
+- `screenshots/login-screen.png`
+- `screenshots/customer-dashboard.png`
+- `screenshots/admin-dashboard.png`

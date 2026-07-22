@@ -56,26 +56,27 @@ public class CustomerDashboard extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(Theme.BG_CARD);
+                g2.setColor(Theme.ACCENT_NAVY);
                 g2.fillRect(0, 0, getWidth(), getHeight());
-                g2.setColor(Theme.BORDER);
+                g2.setColor(Theme.alpha(Color.WHITE, 20));
                 g2.drawLine(getWidth() - 1, 0, getWidth() - 1, getHeight());
             }
         };
-        sidebar.setPreferredSize(new Dimension(220, 0));
+        sidebar.setPreferredSize(new Dimension(230, 0));
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setOpaque(false);
-        sidebar.setBorder(BorderFactory.createEmptyBorder(20, 16, 20, 16));
+        sidebar.setOpaque(true);
+        sidebar.setBackground(Theme.ACCENT_NAVY);
+        sidebar.setBorder(BorderFactory.createEmptyBorder(24, 20, 24, 20));
 
         // Logo
         JLabel logo = new JLabel("🏦 BankPro");
         logo.setFont(Theme.FONT_HEADING);
-        logo.setForeground(Theme.TEXT_PRIMARY);
+        logo.setForeground(Color.WHITE);
         logo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel userLabel = new JLabel("👤 " + currentUser.getFullName());
         userLabel.setFont(Theme.FONT_SMALL);
-        userLabel.setForeground(Theme.ACCENT_TEAL);
+        userLabel.setForeground(Theme.BG_SURFACE);
         userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JSeparator sep = new JSeparator();
@@ -83,11 +84,11 @@ public class CustomerDashboard extends JFrame {
         sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
 
         sidebar.add(logo);
-        sidebar.add(Box.createVerticalStrut(4));
+        sidebar.add(Box.createVerticalStrut(6));
         sidebar.add(userLabel);
-        sidebar.add(Box.createVerticalStrut(16));
+        sidebar.add(Box.createVerticalStrut(18));
         sidebar.add(sep);
-        sidebar.add(Box.createVerticalStrut(16));
+        sidebar.add(Box.createVerticalStrut(18));
 
         String[][] navItems = {
                 { "🏠", "Dashboard", "DASHBOARD" },
@@ -108,6 +109,7 @@ public class CustomerDashboard extends JFrame {
         GradientButton logoutBtn = new GradientButton("Sign Out", Theme.DANGER, new Color(180, 40, 60));
         logoutBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
         logoutBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        logoutBtn.setForeground(Color.WHITE);
         logoutBtn.addActionListener(e -> logout());
         sidebar.add(logoutBtn);
 
@@ -134,7 +136,7 @@ public class CustomerDashboard extends JFrame {
         btn.setFocusPainted(false);
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setFont(Theme.FONT_BODY);
-        btn.setForeground(Theme.TEXT_SECONDARY);
+        btn.setForeground(Color.WHITE);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
@@ -154,16 +156,16 @@ public class CustomerDashboard extends JFrame {
     }
 
     private JPanel buildDashboardPanel() {
-        JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.BG_DARK);
+        JPanel panel = new JPanel(new BorderLayout(0, 18));
+        panel.setBackground(Theme.BG_SUBTLE);
         panel.setBorder(BorderFactory.createEmptyBorder(28, 28, 28, 28));
 
         // Header
         JLabel title = new JLabel("Welcome back, " + currentUser.getFullName() + "! 👋");
         title.setFont(Theme.FONT_TITLE);
-        title.setForeground(Theme.TEXT_PRIMARY);
+        title.setForeground(Theme.ACCENT_NAVY);
 
-        JLabel sub = new JLabel("Here's your financial overview");
+        JLabel sub = new JLabel("Your finances at a glance.");
         sub.setFont(Theme.FONT_BODY);
         sub.setForeground(Theme.TEXT_SECONDARY);
 
@@ -171,7 +173,7 @@ public class CustomerDashboard extends JFrame {
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setOpaque(false);
         header.add(title);
-        header.add(Box.createVerticalStrut(4));
+        header.add(Box.createVerticalStrut(6));
         header.add(sub);
 
         // Stats
@@ -186,7 +188,7 @@ public class CustomerDashboard extends JFrame {
         stats.add(buildStatCard("💰 Total Balance",
                 String.format("$%,.2f", totalBalance), Theme.ACCENT_BLUE, "All accounts combined"));
         stats.add(buildStatCard("💳 Active Accounts",
-                String.valueOf(activeAccounts), Theme.ACCENT_PURPLE, "Open accounts"));
+                String.valueOf(activeAccounts), Theme.ACCENT_ORANGE, "Open accounts"));
         stats.add(buildStatCard("📋 Transactions",
                 String.valueOf(totalTxns), Theme.ACCENT_TEAL, "All time"));
 

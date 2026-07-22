@@ -13,7 +13,7 @@ public class GradientButton extends JButton {
     private boolean pressed = false;
 
     public GradientButton(String text) {
-        this(text, Theme.GRAD_START, Theme.GRAD_END);
+        this(text, Theme.ACCENT_BLUE, Theme.ACCENT_TEAL);
     }
 
     public GradientButton(String text, Color start, Color end) {
@@ -30,10 +30,25 @@ public class GradientButton extends JButton {
         setPreferredSize(new Dimension(getPreferredSize().width, 42));
 
         addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { hovered = true; repaint(); }
-            public void mouseExited(MouseEvent e)  { hovered = false; repaint(); }
-            public void mousePressed(MouseEvent e) { pressed = true; repaint(); }
-            public void mouseReleased(MouseEvent e){ pressed = false; repaint(); }
+            public void mouseEntered(MouseEvent e) {
+                hovered = true;
+                repaint();
+            }
+
+            public void mouseExited(MouseEvent e) {
+                hovered = false;
+                repaint();
+            }
+
+            public void mousePressed(MouseEvent e) {
+                pressed = true;
+                repaint();
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                pressed = false;
+                repaint();
+            }
         });
     }
 
@@ -64,7 +79,7 @@ public class GradientButton extends JButton {
 
         // Subtle glow on hover
         if (hovered && isEnabled()) {
-            g2.setColor(Theme.alpha(colorStart, 60));
+            g2.setColor(new Color(255, 255, 255, 70));
             g2.setStroke(new BasicStroke(3));
             g2.draw(new RoundRectangle2D.Float(1, 1, w - 2, h - 2, 12, 12));
         }

@@ -33,7 +33,7 @@ public class LoginFrame extends JFrame {
         Theme.setupLookAndFeel();
         setTitle("BankPro — Secure Banking System");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(500, 650);
+        setSize(520, 660);
         setLocationRelativeTo(null);
         setResizable(false);
         setContentPane(new BackgroundPanel());
@@ -41,6 +41,7 @@ public class LoginFrame extends JFrame {
 
         JPanel container = new JPanel(new CardLayout());
         container.setOpaque(false);
+        container.setBorder(BorderFactory.createEmptyBorder(26, 20, 26, 20));
 
         loginPanel = buildLoginPanel();
         registerPanel = buildRegisterPanel();
@@ -71,7 +72,7 @@ public class LoginFrame extends JFrame {
         title.setForeground(Theme.TEXT_PRIMARY);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel subtitle = new JLabel("Secure Banking Management System", SwingConstants.CENTER);
+        JLabel subtitle = new JLabel("Secure banking, modern workflows, fast access.", SwingConstants.CENTER);
         subtitle.setFont(Theme.FONT_SMALL);
         subtitle.setForeground(Theme.TEXT_SECONDARY);
         subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -86,32 +87,45 @@ public class LoginFrame extends JFrame {
 
         GradientButton loginBtn = new GradientButton("Sign In");
         loginBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        loginBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+        loginBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
         loginBtn.addActionListener(e -> performLogin());
 
         JButton switchBtn = new JButton("Don't have an account? Register →");
-        switchBtn.setOpaque(false); switchBtn.setContentAreaFilled(false);
-        switchBtn.setBorderPainted(false); switchBtn.setFocusPainted(false);
-        switchBtn.setForeground(Theme.ACCENT_BLUE); switchBtn.setFont(Theme.FONT_SMALL);
+        switchBtn.setOpaque(false);
+        switchBtn.setContentAreaFilled(false);
+        switchBtn.setBorderPainted(false);
+        switchBtn.setFocusPainted(false);
+        switchBtn.setForeground(Theme.ACCENT_BLUE);
+        switchBtn.setFont(Theme.FONT_SMALL);
         switchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         switchBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         switchBtn.addActionListener(e -> switchToRegister());
 
-        JLabel hint = new JLabel("Demo: admin/admin123  or  john/john123", SwingConstants.CENTER);
+        JLabel hint = new JLabel("Demo credentials: admin/admin123 or john/john123", SwingConstants.CENTER);
         hint.setFont(Theme.FONT_SMALL);
         hint.setForeground(Theme.TEXT_MUTED);
         hint.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        card.add(icon); card.add(Box.createVerticalStrut(8));
-        card.add(title); card.add(Box.createVerticalStrut(4));
-        card.add(subtitle); card.add(Box.createVerticalStrut(28));
-        card.add(makeLabel("Username")); card.add(Box.createVerticalStrut(6));
-        card.add(loginUsername); card.add(Box.createVerticalStrut(14));
-        card.add(makeLabel("Password")); card.add(Box.createVerticalStrut(6));
-        card.add(loginPassword); card.add(Box.createVerticalStrut(10));
-        card.add(loginError); card.add(Box.createVerticalStrut(10));
-        card.add(loginBtn); card.add(Box.createVerticalStrut(18));
-        card.add(switchBtn); card.add(Box.createVerticalStrut(14));
+        card.add(icon);
+        card.add(Box.createVerticalStrut(8));
+        card.add(title);
+        card.add(Box.createVerticalStrut(4));
+        card.add(subtitle);
+        card.add(Box.createVerticalStrut(28));
+        card.add(makeLabel("Username"));
+        card.add(Box.createVerticalStrut(6));
+        card.add(loginUsername);
+        card.add(Box.createVerticalStrut(14));
+        card.add(makeLabel("Password"));
+        card.add(Box.createVerticalStrut(6));
+        card.add(loginPassword);
+        card.add(Box.createVerticalStrut(10));
+        card.add(loginError);
+        card.add(Box.createVerticalStrut(10));
+        card.add(loginBtn);
+        card.add(Box.createVerticalStrut(18));
+        card.add(switchBtn);
+        card.add(Box.createVerticalStrut(14));
         card.add(hint);
 
         Dimension cardSize = new Dimension(400, 520);
@@ -129,9 +143,9 @@ public class LoginFrame extends JFrame {
         CardPanel card = new CardPanel();
         card.setBackground(Theme.BG_CARD);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        card.setBorder(BorderFactory.createEmptyBorder(32, 40, 32, 40));
 
-        JLabel title = new JLabel("Create Account", SwingConstants.CENTER);
+        JLabel title = new JLabel("Create your BankPro account", SwingConstants.CENTER);
         title.setFont(Theme.FONT_HEADING);
         title.setForeground(Theme.TEXT_PRIMARY);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -154,28 +168,46 @@ public class LoginFrame extends JFrame {
         regBtn.addActionListener(e -> performRegister());
 
         JButton backBtn = new JButton("← Back to Sign In");
-        backBtn.setOpaque(false); backBtn.setContentAreaFilled(false);
-        backBtn.setBorderPainted(false); backBtn.setFocusPainted(false);
-        backBtn.setForeground(Theme.ACCENT_BLUE); backBtn.setFont(Theme.FONT_SMALL);
+        backBtn.setOpaque(false);
+        backBtn.setContentAreaFilled(false);
+        backBtn.setBorderPainted(false);
+        backBtn.setFocusPainted(false);
+        backBtn.setForeground(Theme.ACCENT_BLUE);
+        backBtn.setFont(Theme.FONT_SMALL);
         backBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         backBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         backBtn.addActionListener(e -> switchToLogin());
 
-        card.add(title); card.add(Box.createVerticalStrut(20));
-        card.add(makeLabel("Full Name")); card.add(Box.createVerticalStrut(5));
-        card.add(regFullName); card.add(Box.createVerticalStrut(10));
-        card.add(makeLabel("Username")); card.add(Box.createVerticalStrut(5));
-        card.add(regUsername); card.add(Box.createVerticalStrut(10));
-        card.add(makeLabel("Email")); card.add(Box.createVerticalStrut(5));
-        card.add(regEmail); card.add(Box.createVerticalStrut(10));
-        card.add(makeLabel("Phone")); card.add(Box.createVerticalStrut(5));
-        card.add(regPhone); card.add(Box.createVerticalStrut(10));
-        card.add(makeLabel("Password")); card.add(Box.createVerticalStrut(5));
-        card.add(regPassword); card.add(Box.createVerticalStrut(10));
-        card.add(makeLabel("Confirm Password")); card.add(Box.createVerticalStrut(5));
-        card.add(regConfirmPassword); card.add(Box.createVerticalStrut(8));
-        card.add(regError); card.add(Box.createVerticalStrut(8));
-        card.add(regBtn); card.add(Box.createVerticalStrut(12));
+        card.add(title);
+        card.add(Box.createVerticalStrut(20));
+        card.add(makeLabel("Full Name"));
+        card.add(Box.createVerticalStrut(5));
+        card.add(regFullName);
+        card.add(Box.createVerticalStrut(10));
+        card.add(makeLabel("Username"));
+        card.add(Box.createVerticalStrut(5));
+        card.add(regUsername);
+        card.add(Box.createVerticalStrut(10));
+        card.add(makeLabel("Email"));
+        card.add(Box.createVerticalStrut(5));
+        card.add(regEmail);
+        card.add(Box.createVerticalStrut(10));
+        card.add(makeLabel("Phone"));
+        card.add(Box.createVerticalStrut(5));
+        card.add(regPhone);
+        card.add(Box.createVerticalStrut(10));
+        card.add(makeLabel("Password"));
+        card.add(Box.createVerticalStrut(5));
+        card.add(regPassword);
+        card.add(Box.createVerticalStrut(10));
+        card.add(makeLabel("Confirm Password"));
+        card.add(Box.createVerticalStrut(5));
+        card.add(regConfirmPassword);
+        card.add(Box.createVerticalStrut(8));
+        card.add(regError);
+        card.add(Box.createVerticalStrut(8));
+        card.add(regBtn);
+        card.add(Box.createVerticalStrut(12));
         card.add(backBtn);
 
         Dimension cardSize = new Dimension(400, 600);
@@ -266,7 +298,10 @@ public class LoginFrame extends JFrame {
         private Timer timer;
 
         BackgroundPanel() {
-            timer = new Timer(50, e -> { animOffset += 0.005f; repaint(); });
+            timer = new Timer(50, e -> {
+                animOffset += 0.005f;
+                repaint();
+            });
             timer.start();
         }
 
@@ -277,16 +312,17 @@ public class LoginFrame extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
             int w = getWidth(), h = getHeight();
-            float shift = (float)(Math.sin(animOffset) * 0.2 + 0.4);
-            GradientPaint gp = new GradientPaint(0, 0, Theme.BG_DARK, w * shift, h, new Color(20, 10, 45));
+            float shift = (float) (Math.sin(animOffset) * 0.2 + 0.4);
+            GradientPaint gp = new GradientPaint(0, 0, Theme.BG_DARK, w, h, Theme.ACCENT_NAVY);
             g2.setPaint(gp);
             g2.fillRect(0, 0, w, h);
 
-            // Decorative circles
-            g2.setColor(Theme.alpha(Theme.ACCENT_BLUE, 15));
-            g2.fillOval(-80, -80, 300, 300);
-            g2.setColor(Theme.alpha(Theme.ACCENT_PURPLE, 12));
-            g2.fillOval(w - 150, h - 200, 350, 350);
+            g2.setColor(Theme.alpha(Theme.ACCENT_BLUE, 18));
+            g2.fillOval(-90, -90, 300, 300);
+            g2.setColor(Theme.alpha(Theme.ACCENT_TEAL, 12));
+            g2.fillOval(w - 200, h - 220, 360, 360);
+            g2.setColor(Theme.alpha(Theme.ACCENT_ORANGE, 12));
+            g2.fillOval(w / 2 - 140, h - 140, 260, 260);
         }
     }
 }
