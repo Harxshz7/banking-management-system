@@ -1,4 +1,7 @@
 # 🏦 BankPro — Banking Management System
+
+[![Build & Test](https://github.com/YOUR_USERNAME/banking-management-system/actions/workflows/build.yml/badge.svg)](https://github.com/YOUR_USERNAME/banking-management-system/actions/workflows/build.yml)
+
 > A premium Java Swing desktop banking application with modern banking UI, persistent storage, and full banking features.
 
 ---
