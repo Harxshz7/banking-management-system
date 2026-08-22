@@ -5,22 +5,23 @@
 
 ## 🚀 Quick Start
 
-### Compile
-```bat
-compile.bat
-```
-Or manually:
-```powershell
-javac -encoding UTF-8 -d out (Get-ChildItem -Recurse -Filter "*.java" src).FullName
+### Build
+```bash
+mvn clean package
 ```
 
 ### Run
-```bat
-run.bat
+```bash
+mvn exec:java -Dexec.mainClass="banking.Main"
 ```
-Or:
-```powershell
-java -cp out banking.Main
+Or run the jar directly:
+```bash
+java -jar target/bankpro-1.0.0.jar
+```
+
+### Test
+```bash
+mvn test
 ```
 
 ---
@@ -31,6 +32,8 @@ java -cp out banking.Main
 |----------|----------|-----------|
 | Admin    | admin    | admin123  |
 | Customer | john     | john123   |
+
+> Passwords are stored as BCrypt hashes. On first login, legacy plaintext passwords are automatically re-hashed.
 
 ---
 
@@ -55,27 +58,42 @@ java -cp out banking.Main
 ## 🗂️ Project Structure
 
 ```
-src/banking/
-├── Main.java                          ← Entry point
-├── models/
-│   ├── User.java                      ← User entity
-│   ├── Account.java                   ← Bank account entity
-│   └── Transaction.java               ← Transaction record
-├── data/
-│   └── DataManager.java               ← File-based persistence (serialization)
-├── services/
-│   ├── AuthService.java               ← Login / Register logic
-│   └── BankingService.java            ← Deposit / Withdraw / Transfer
-└── ui/
-    ├── Theme.java                      ← Color palette, fonts, helpers
-    ├── LoginFrame.java                 ← Login + Register screen
-    ├── CustomerDashboard.java          ← Customer main window
-    ├── AdminDashboard.java             ← Admin control panel
-    └── components/
-        ├── CardPanel.java              ← Rounded card with shadow
-        ├── GradientButton.java         ← Animated gradient button
-        ├── StyledTextField.java        ← Custom text field with placeholder
-        └── StyledPasswordField.java    ← Custom password field
+src/
+├── main/java/banking/
+│   ├── Main.java                          ← Entry point
+│   ├── models/
+│   │   ├── User.java                      ← User entity
+│   │   ├── Account.java                   ← Bank account entity
+│   │   ├── Transaction.java               ← Transaction record
+│   │   ├── Loan.java                      ← Loan entity
+│   │   ├── Beneficiary.java               ← Saved beneficiary
+│   │   ├── Notification.java              ← User notification
+│   │   ├── RecurringDeposit.java          ← Recurring deposit
+│   │   ├── ScheduledTransfer.java         ← Scheduled transfer
+│   │   └── AuditLog.java                  ← Audit log entry
+│   ├── data/
+│   │   └── DataManager.java               ← File-based persistence (serialization)
+│   ├── services/
+│   │   ├── AuthService.java               ← Login / Register logic
+│   │   ├── BankingService.java            ← Deposit / Withdraw / Transfer
+│   │   ├── BankingServiceExtensions.java  ← Scheduled transfers, recurring deposits
+│   │   └── LoanService.java               ← Loan operations
+│   ├── util/
+│   │   └── PasswordUtil.java              ← BCrypt hashing utility
+│   └── ui/
+│       ├── Theme.java                     ← Color palette, fonts, helpers
+│       ├── LoginFrame.java                ← Login + Register screen
+│       ├── CustomerDashboard.java         ← Customer main window
+│       ├── AdminDashboard.java            ← Admin control panel
+│       ├── PinDialog.java                 ← Transaction PIN dialog
+│       ├── ReceiptDialog.java             ← Transaction receipt
+│       └── components/
+│           ├── CardPanel.java             ← Rounded card with shadow
+│           ├── GradientButton.java        ← Animated gradient button
+│           ├── StyledTextField.java       ← Custom text field with placeholder
+│           └── StyledPasswordField.java   ← Custom password field
+└── test/java/banking/
+    └── (JUnit 5 tests)
 ```
 
 ---
@@ -93,18 +111,14 @@ Data persists across sessions automatically.
 
 ## 🎨 Tech Stack
 - **Language**: Java 17+
+- **Build**: Maven
 - **UI**: Java Swing (custom-rendered components)
 - **Storage**: Java Object Serialization
+- **Security**: BCrypt password/PIN hashing (jbcrypt)
+- **Testing**: JUnit 5
 - **Design**: Dark theme, gradient buttons, glassmorphism cards
 
 ---
-
-## ✨ UI/UX Improvements
-- Modern navy-to-teal theme with crisp contrast and polished component styling
-- Refreshed login screen with floating labels, refined form fields, and improved spacing
-- Redesigned customer and admin dashboards for better card layouts, sidebar navigation, and quick insights
-- Consistent visual language across buttons, inputs, cards, dialogs, and headers
-- Preserved all existing banking business logic, transaction flow, and persistence behavior
 
 ## 📷 Screenshots
 > Replace these placeholders with actual screenshots from the refreshed app.

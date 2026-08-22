@@ -1,19 +1,11 @@
 # Java bytecode
 *.class
 
-# Packages (allow lib/jbcrypt-0.4.jar)
-*.jar
+# Maven
+/target/
+/.mvn/
 *.war
 *.ear
-!lib/jbcrypt-0.4.jar
-
-# Compiled output
-/out/
-/target/
-/build/
-/dist/
-/lib/*
-!lib/jbcrypt-0.4.jar
 
 # IDEs
 .vscode/
@@ -25,8 +17,7 @@
 /.classpath
 /.settings/
 
-# Maven/Gradle
-/.mvn/
+# Gradle
 /.gradle/
 
 # OS files
@@ -43,9 +34,6 @@ Thumbs.db
 /banking_data/
 *.db
 *.dat
-
-# Other
-*.class
 
 # Keep local env files out
 .env
