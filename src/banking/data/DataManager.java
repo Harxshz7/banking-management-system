@@ -1,6 +1,7 @@
 package banking.data;
 
 import banking.models.*;
+import banking.util.PasswordUtil;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,21 +54,21 @@ public class DataManager {
         if (!users.isEmpty())
             return;
 
-        User admin = new User("admin", "admin123", "System Administrator",
+        User admin = new User("admin", PasswordUtil.hash("admin123"), "System Administrator",
                 "admin@bankpro.com", "1800000000", "ADMIN");
-        admin.setTransactionPin("0000");
+        admin.hashAndSetPin("0000");
         users.add(admin);
 
-        User john = new User("john", "john123", "John Doe",
+        User john = new User("john", PasswordUtil.hash("john123"), "John Doe",
                 "john@email.com", "9876543210", "CUSTOMER");
         john.setAddress("123 Main Street, NY");
-        john.setTransactionPin("1234");
+        john.hashAndSetPin("1234");
         users.add(john);
 
-        User jane = new User("jane", "jane123", "Jane Smith",
+        User jane = new User("jane", PasswordUtil.hash("jane123"), "Jane Smith",
                 "jane@email.com", "9123456789", "CUSTOMER");
         jane.setAddress("456 Oak Avenue, LA");
-        jane.setTransactionPin("5678");
+        jane.hashAndSetPin("5678");
         users.add(jane);
 
         // John's accounts

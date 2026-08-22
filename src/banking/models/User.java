@@ -1,11 +1,12 @@
 package banking.models;
 
+import banking.util.PasswordUtil;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class User implements Serializable {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
     private String id;
     private String username;
@@ -106,7 +107,7 @@ public class User implements Serializable {
     }
 
     public void setTransactionPin(String pin) {
-        this.transactionPin = pin;
+        this.transactionPin = pin == null ? null : PasswordUtil.hash(pin);
     }
 
     public void setActive(boolean active) {
@@ -126,7 +127,32 @@ public class User implements Serializable {
     }
 
     public boolean verifyPin(String pin) {
-        return transactionPin != null && transactionPin.equals(pin);
+        if (transactionPin == null) return false;
+        if (PasswordUtil.isBcryptHash(transactionPin)) {
+            return PasswordUtil.check(pin, transactionPin);
+        }
+        // Legacy plaintext comparison
+        return transactionPin.equals(pin);
+    }
+
+    /** Returns true if the stored password is NOT yet a bcrypt hash. */
+    public boolean needsPasswordMigration() {
+        return password != null && !PasswordUtil.isBcryptHash(password);
+    }
+
+    /** Returns true if the stored PIN is NOT yet a bcrypt hash. */
+    public boolean needsPinMigration() {
+        return transactionPin != null && !PasswordUtil.isBcryptHash(transactionPin);
+    }
+
+    /** Hash password and store the hash. */
+    public void hashAndSetPassword(String plaintext) {
+        this.password = PasswordUtil.hash(plaintext);
+    }
+
+    /** Hash PIN and store the hash. */
+    public void hashAndSetPin(String plaintext) {
+        setTransactionPin(plaintext);
     }
 
     public boolean verifyOtp(String otp) {

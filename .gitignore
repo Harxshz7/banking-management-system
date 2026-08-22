@@ -1,17 +1,19 @@
 # Java bytecode
 *.class
 
-# Packages
+# Packages (allow lib/jbcrypt-0.4.jar)
 *.jar
 *.war
 *.ear
+!lib/jbcrypt-0.4.jar
 
 # Compiled output
 /out/
 /target/
 /build/
 /dist/
-/lib/
+/lib/*
+!lib/jbcrypt-0.4.jar
 
 # IDEs
 .vscode/
