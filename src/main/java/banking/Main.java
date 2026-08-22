@@ -1,8 +1,5 @@
 package banking;
 
-import banking.services.AuthService;
-import banking.ui.LoginFrame;
-import banking.ui.Theme;
 import javax.swing.SwingUtilities;
 
 public class Main {
@@ -11,6 +8,13 @@ public class Main {
         System.setProperty("sun.java2d.uiScale", "1.0");
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
+
+        // Process any due scheduled transfers on startup
+        try {
+            new BankingServiceExtensions().processScheduledTransfers();
+        } catch (Exception e) {
+            System.err.println("Error processing scheduled transfers: " + e.getMessage());
+        }
 
         SwingUtilities.invokeLater(() -> {
             Theme.setupLookAndFeel();

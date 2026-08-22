@@ -12,6 +12,7 @@ import java.util.List;
 public class AdminDashboard extends JFrame {
     private final AuthService authService;
     private final BankingService bankingService;
+    private final LoanService loanService;
     private final DataManager dm;
 
     private JPanel mainContent;
@@ -21,10 +22,12 @@ public class AdminDashboard extends JFrame {
     private DefaultTableModel usersModel;
     private DefaultTableModel accountsModel;
     private DefaultTableModel transactionsModel;
+    private DefaultTableModel loansModel;
 
     public AdminDashboard(AuthService authService) {
         this.authService = authService;
         this.bankingService = new BankingService();
+        this.loanService = new LoanService();
         this.dm = DataManager.getInstance();
 
         setTitle("BankPro Admin — Control Panel");
@@ -46,6 +49,7 @@ public class AdminDashboard extends JFrame {
         mainContent.add(buildUsersPanel(), "USERS");
         mainContent.add(buildAccountsPanel(), "ACCOUNTS");
         mainContent.add(buildTransactionsPanel(), "TRANSACTIONS");
+        mainContent.add(buildLoansPanel(), "LOANS");
 
         add(mainContent, BorderLayout.CENTER);
         contentLayout.show(mainContent, "OVERVIEW");
@@ -70,7 +74,7 @@ public class AdminDashboard extends JFrame {
         sidebar.setBackground(Theme.ACCENT_NAVY);
         sidebar.setBorder(BorderFactory.createEmptyBorder(24, 18, 24, 18));
 
-        JLabel logo = new JLabel("🏦 BankPro");
+        JLabel logo = new JLabel("\uD83C\uDFE6 BankPro");
         logo.setFont(Theme.FONT_HEADING);
         logo.setForeground(Color.WHITE);
         logo.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -80,7 +84,7 @@ public class AdminDashboard extends JFrame {
         badge.setForeground(Theme.ACCENT_ORANGE);
         badge.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel userLabel = new JLabel("👑 " + authService.getCurrentUser().getFullName());
+        JLabel userLabel = new JLabel("\uD83D\uDC51 " + authService.getCurrentUser().getFullName());
         userLabel.setFont(Theme.FONT_SMALL);
         userLabel.setForeground(Theme.BG_SURFACE);
         userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -99,10 +103,11 @@ public class AdminDashboard extends JFrame {
         sidebar.add(Box.createVerticalStrut(16));
 
         String[][] navItems = {
-                { "📊", "Overview", "OVERVIEW" },
-                { "👥", "Manage Users", "USERS" },
-                { "💳", "All Accounts", "ACCOUNTS" },
-                { "📋", "All Transactions", "TRANSACTIONS" },
+                { "\uD83D\uDCCA", "Overview", "OVERVIEW" },
+                { "\uD83D\uDC65", "Manage Users", "USERS" },
+                { "\uD83D\uDCB3", "All Accounts", "ACCOUNTS" },
+                { "\uD83D\uDCCB", "All Transactions", "TRANSACTIONS" },
+                { "\uD83C\uDF9E", "Loan Management", "LOANS" },
         };
 
         for (String[] item : navItems) {
@@ -157,6 +162,8 @@ public class AdminDashboard extends JFrame {
                 refreshAccountsTable();
             else if (panel.equals("TRANSACTIONS"))
                 refreshTransactionsTable();
+            else if (panel.equals("LOANS"))
+                refreshLoansTable();
         });
         return btn;
     }
@@ -183,14 +190,13 @@ public class AdminDashboard extends JFrame {
         JPanel stats = new JPanel(new GridLayout(2, 2, 16, 16));
         stats.setOpaque(false);
         stats.add(
-                buildStatCard("👥 Total Customers", String.valueOf(totalUsers), Theme.ACCENT_BLUE, "Registered users"));
-        stats.add(buildStatCard("💳 Active Accounts", String.valueOf(activeAccounts), Theme.ACCENT_ORANGE,
+                buildStatCard("\uD83D\uDC65 Total Customers", String.valueOf(totalUsers), Theme.ACCENT_BLUE, "Registered users"));
+        stats.add(buildStatCard("\uD83D\uDCB3 Active Accounts", String.valueOf(activeAccounts), Theme.ACCENT_ORANGE,
                 "Open accounts"));
         stats.add(
-                buildStatCard("💰 Total Assets", String.format("$%,.2f", totalAssets), Theme.SUCCESS, "All deposits"));
-        stats.add(buildStatCard("📋 Total Transactions", String.valueOf(totalTxns), Theme.ACCENT_TEAL, "All time"));
+                buildStatCard("\uD83D\uDCB0 Total Assets", String.format("$%,.2f", totalAssets), Theme.SUCCESS, "All deposits"));
+        stats.add(buildStatCard("\uD83D\uDCCB Total Transactions", String.valueOf(totalTxns), Theme.ACCENT_TEAL, "All time"));
 
-        // Recent activity
         JLabel recentTitle = new JLabel("Recent Activity");
         recentTitle.setFont(Theme.FONT_HEADING);
         recentTitle.setForeground(Theme.TEXT_PRIMARY);
@@ -269,7 +275,6 @@ public class AdminDashboard extends JFrame {
         title.setFont(Theme.FONT_TITLE);
         title.setForeground(Theme.TEXT_PRIMARY);
 
-        // Add user area
         CardPanel addCard = new CardPanel();
         addCard.setBackground(Theme.BG_CARD);
         addCard.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
@@ -322,7 +327,6 @@ public class AdminDashboard extends JFrame {
         addCard.add(phField);
         addCard.add(addBtn);
 
-        // Table
         String[] cols = { "ID", "Full Name", "Username", "Email", "Phone", "Role", "Status", "Created" };
         usersModel = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) {
@@ -331,7 +335,7 @@ public class AdminDashboard extends JFrame {
         };
         JTable table = buildStyledTable(usersModel);
 
-        JButton deleteBtn = new JButton("🗑 Delete Selected");
+        JButton deleteBtn = new JButton("\uD83D\uDDD1 Delete Selected");
         deleteBtn.setBackground(Theme.DANGER);
         deleteBtn.setForeground(Color.WHITE);
         deleteBtn.setFont(Theme.FONT_BODY);
@@ -415,7 +419,7 @@ public class AdminDashboard extends JFrame {
         scroll.getViewport().setBackground(Theme.BG_SURFACE);
         scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
-        GradientButton refreshBtn = new GradientButton("🔄 Refresh");
+        GradientButton refreshBtn = new GradientButton("\uD83D\uDD04 Refresh");
         refreshBtn.addActionListener(e -> refreshAccountsTable());
         JPanel top = new JPanel(new BorderLayout());
         top.setOpaque(false);
@@ -461,7 +465,6 @@ public class AdminDashboard extends JFrame {
             }
         };
         JTable table = buildStyledTable(transactionsModel);
-        // Color amounts
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable t, Object value,
@@ -486,7 +489,7 @@ public class AdminDashboard extends JFrame {
         scroll.getViewport().setBackground(Theme.BG_SURFACE);
         scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
-        GradientButton refreshBtn = new GradientButton("🔄 Refresh");
+        GradientButton refreshBtn = new GradientButton("\uD83D\uDD04 Refresh");
         refreshBtn.addActionListener(e -> refreshTransactionsTable());
         JPanel top = new JPanel(new BorderLayout());
         top.setOpaque(false);
@@ -518,6 +521,210 @@ public class AdminDashboard extends JFrame {
                     tx.getFormattedAmount(),
                     String.format("$%,.2f", tx.getBalanceAfter()),
                     tx.getDescription()
+            });
+        }
+    }
+
+    // ===================== LOANS PANEL =====================
+    private JPanel buildLoansPanel() {
+        JPanel panel = new JPanel(new BorderLayout(0, 16));
+        panel.setBackground(Theme.BG_DARK);
+        panel.setBorder(BorderFactory.createEmptyBorder(28, 28, 28, 28));
+
+        JLabel title = new JLabel("Loan Management");
+        title.setFont(Theme.FONT_TITLE);
+        title.setForeground(Theme.TEXT_PRIMARY);
+
+        String[] cols = { "ID", "Customer", "Type", "Principal", "EMI", "Outstanding", "Status", "Applied", "Actions" };
+        loansModel = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return c == 8; }
+        };
+        JTable table = new JTable(loansModel);
+        table.setBackground(Theme.BG_SURFACE);
+        table.setForeground(Theme.TEXT_PRIMARY);
+        table.setFont(Theme.FONT_BODY);
+        table.setRowHeight(38);
+        table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0, 0));
+        table.setSelectionBackground(Theme.BG_HOVER);
+        table.setSelectionForeground(Theme.TEXT_PRIMARY);
+        table.getTableHeader().setBackground(Theme.BG_CARD);
+        table.getTableHeader().setForeground(Theme.ACCENT_BLUE);
+        table.getTableHeader().setFont(Theme.FONT_SUBHEAD);
+        table.getTableHeader().setReorderingAllowed(false);
+
+        // Hide ID column
+        table.getColumnModel().getColumn(0).setMinWidth(0);
+        table.getColumnModel().getColumn(0).setMaxWidth(0);
+        table.getColumnModel().getColumn(0).setPreferredWidth(0);
+
+        // Custom renderer for status column
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int col) {
+                Component c = super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
+                setBackground(row % 2 == 0 ? Theme.BG_SURFACE : Theme.BG_CARD);
+                setForeground(Theme.TEXT_PRIMARY);
+                setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+                if (col == 6 && value != null) {
+                    String status = value.toString();
+                    switch (status) {
+                        case "PENDING" -> setForeground(Theme.ACCENT_ORANGE);
+                        case "ACTIVE" -> setForeground(Theme.SUCCESS);
+                        case "REJECTED" -> setForeground(Theme.DANGER);
+                        case "CLOSED" -> setForeground(Theme.TEXT_MUTED);
+                    }
+                    setFont(Theme.FONT_SUBHEAD);
+                }
+                if (col == 4 && value != null) {
+                    setFont(Theme.FONT_SUBHEAD);
+                }
+                if (isSelected)
+                    setBackground(Theme.BG_HOVER);
+                return c;
+            }
+        });
+
+        // Action button column
+        table.getColumnModel().getColumn(8).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int col) {
+                JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
+                p.setOpaque(false);
+                String status = (String) t.getValueAt(row, 6);
+                if ("PENDING".equals(status)) {
+                    JButton approveBtn = new JButton("Approve");
+                    approveBtn.setBackground(Theme.SUCCESS);
+                    approveBtn.setForeground(Color.WHITE);
+                    approveBtn.setFont(Theme.FONT_SMALL);
+                    approveBtn.setFocusPainted(false);
+                    approveBtn.setBorderPainted(false);
+                    approveBtn.setPreferredSize(new Dimension(80, 26));
+                    approveBtn.addActionListener(e -> handleLoanApproval(t, row, true));
+
+                    JButton rejectBtn = new JButton("Reject");
+                    rejectBtn.setBackground(Theme.DANGER);
+                    rejectBtn.setForeground(Color.WHITE);
+                    rejectBtn.setFont(Theme.FONT_SMALL);
+                    rejectBtn.setFocusPainted(false);
+                    rejectBtn.setBorderPainted(false);
+                    rejectBtn.setPreferredSize(new Dimension(70, 26));
+                    rejectBtn.addActionListener(e -> handleLoanApproval(t, row, false));
+
+                    p.add(approveBtn);
+                    p.add(rejectBtn);
+                }
+                return p;
+            }
+        });
+
+        table.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            @Override
+            public Component getTableCellEditorComponent(JTable t, Object value,
+                    boolean isSelected, int row, int col) {
+                JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
+                p.setOpaque(false);
+                String status = (String) t.getValueAt(row, 6);
+                if ("PENDING".equals(status)) {
+                    JButton approveBtn = new JButton("Approve");
+                    approveBtn.setBackground(Theme.SUCCESS);
+                    approveBtn.setForeground(Color.WHITE);
+                    approveBtn.setFont(Theme.FONT_SMALL);
+                    approveBtn.setFocusPainted(false);
+                    approveBtn.setBorderPainted(false);
+                    approveBtn.setPreferredSize(new Dimension(80, 26));
+                    approveBtn.addActionListener(e -> {
+                        fireEditingStopped();
+                        handleLoanApproval(t, row, true);
+                    });
+
+                    JButton rejectBtn = new JButton("Reject");
+                    rejectBtn.setBackground(Theme.DANGER);
+                    rejectBtn.setForeground(Color.WHITE);
+                    rejectBtn.setFont(Theme.FONT_SMALL);
+                    rejectBtn.setFocusPainted(false);
+                    rejectBtn.setBorderPainted(false);
+                    rejectBtn.setPreferredSize(new Dimension(70, 26));
+                    rejectBtn.addActionListener(e -> {
+                        fireEditingStopped();
+                        handleLoanApproval(t, row, false);
+                    });
+
+                    p.add(approveBtn);
+                    p.add(rejectBtn);
+                }
+                return p;
+            }
+
+            @Override
+            public Object getCellEditorValue() { return ""; }
+        });
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBackground(Theme.BG_DARK);
+        scroll.getViewport().setBackground(Theme.BG_SURFACE);
+        scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
+
+        GradientButton refreshBtn = new GradientButton("\uD83D\uDD04 Refresh");
+        refreshBtn.addActionListener(e -> refreshLoansTable());
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+        top.add(title, BorderLayout.WEST);
+        top.add(refreshBtn, BorderLayout.EAST);
+
+        panel.add(top, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+        refreshLoansTable();
+        return panel;
+    }
+
+    private void handleLoanApproval(JTable table, int row, boolean approve) {
+        String loanId = (String) loansModel.getValueAt(row, 0);
+        String status = (String) loansModel.getValueAt(row, 6);
+        if (!"PENDING".equals(status)) return;
+
+        String note = JOptionPane.showInputDialog(this,
+                approve ? "Approve note (optional):" : "Rejection reason:",
+                approve ? "Loan Approved" : "Loan Rejected");
+        if (note == null) return;
+
+        boolean success;
+        if (approve) {
+            success = loanService.approveLoan(loanId, note);
+        } else {
+            success = loanService.rejectLoan(loanId, note);
+        }
+
+        if (success) {
+            showMsg("Loan " + (approve ? "approved" : "rejected") + " successfully!",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+            refreshLoansTable();
+        } else {
+            showMsg("Failed to process loan.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void refreshLoansTable() {
+        if (loansModel == null) return;
+        loansModel.setRowCount(0);
+        List<Loan> loans = loanService.getAllLoans().stream()
+                .sorted((a, b) -> b.getAppliedAt().compareTo(a.getAppliedAt()))
+                .toList();
+
+        for (Loan loan : loans) {
+            User u = dm.findUserById(loan.getUserId()).orElse(null);
+            loansModel.addRow(new Object[] {
+                    loan.getId(),
+                    u != null ? u.getFullName() : "Unknown",
+                    loan.getTypeDisplay(),
+                    loan.getFormattedPrincipal(),
+                    loan.getFormattedEmi(),
+                    loan.getFormattedOutstanding(),
+                    loan.getStatus().name(),
+                    loan.getAppliedAt().toLocalDate(),
+                    loan.getStatus().name() // for actions column renderer check
             });
         }
     }

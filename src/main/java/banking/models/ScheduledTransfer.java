@@ -82,9 +82,17 @@ public class ScheduledTransfer implements Serializable {
         this.scheduledDate = this.scheduledDate.plusMonths(1);
     }
 
+    public void cancel() {
+        this.executed = true; // mark done so it won't run
+    }
+
     public String getStatus() {
         if (executed && !recurringMonthly)
             return "Completed";
-        return recurringMonthly ? "Recurring" : "Pending";
+        if (executed && recurringMonthly)
+            return "Cancelled";
+        if (!recurringMonthly && scheduledDate.isAfter(java.time.LocalDate.now()))
+            return "Pending";
+        return "Recurring";
     }
 }

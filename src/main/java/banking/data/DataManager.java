@@ -279,6 +279,11 @@ public class DataManager {
         saveAll();
     }
 
+    public void removeScheduledTransfer(String id) {
+        scheduledTransfers.removeIf(s -> s.getId().equals(id));
+        saveAll();
+    }
+
     // ===================== BENEFICIARY OPERATIONS =====================
     public List<Beneficiary> getAllBeneficiaries() {
         return new ArrayList<>(beneficiaries);

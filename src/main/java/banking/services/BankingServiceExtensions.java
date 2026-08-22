@@ -38,6 +38,15 @@ public class BankingServiceExtensions {
         return dm.getScheduledTransfersByUser(userId);
     }
 
+    public boolean cancelScheduledTransfer(String transferId) {
+        ScheduledTransfer st = dm.getAllScheduledTransfers().stream()
+                .filter(t -> t.getId().equals(transferId)).findFirst().orElse(null);
+        if (st == null || st.isExecuted()) return false;
+        st.cancel();
+        dm.updateScheduledTransfer(st);
+        return true;
+    }
+
     public void processScheduledTransfers() {
         LocalDate today = LocalDate.now();
         List<ScheduledTransfer> transfers = dm.getAllScheduledTransfers();

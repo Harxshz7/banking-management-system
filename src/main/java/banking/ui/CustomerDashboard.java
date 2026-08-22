@@ -7,12 +7,15 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class CustomerDashboard extends JFrame {
     private final AuthService authService;
     private final BankingService bankingService;
-    private final User currentUser;
+    private final LoanService loanService;
+    private final BankingServiceExtensions extService;
 
     private JPanel mainContent;
     private CardLayout contentLayout;
@@ -21,6 +24,8 @@ public class CustomerDashboard extends JFrame {
     public CustomerDashboard(AuthService authService) {
         this.authService = authService;
         this.bankingService = new BankingService();
+        this.loanService = new LoanService();
+        this.extService = new BankingServiceExtensions();
         this.currentUser = authService.getCurrentUser();
 
         setTitle("BankPro — " + currentUser.getFullName());
@@ -44,11 +49,18 @@ public class CustomerDashboard extends JFrame {
         mainContent.add(buildWithdrawPanel(), "WITHDRAW");
         mainContent.add(buildTransferPanel(), "TRANSFER");
         mainContent.add(buildHistoryPanel(), "HISTORY");
+        mainContent.add(buildLoansPanel(), "LOANS");
+        mainContent.add(buildBeneficiariesPanel(), "BENEFICIARIES");
+        mainContent.add(buildScheduledPanel(), "SCHEDULED");
 
         add(mainContent, BorderLayout.CENTER);
         contentLayout.show(mainContent, "DASHBOARD");
         setVisible(true);
     }
+
+    // ===================== SIDEBAR =====================
+
+    private final User currentUser;
 
     private JPanel buildSidebar() {
         JPanel sidebar = new JPanel() {
@@ -68,13 +80,12 @@ public class CustomerDashboard extends JFrame {
         sidebar.setBackground(Theme.ACCENT_NAVY);
         sidebar.setBorder(BorderFactory.createEmptyBorder(24, 20, 24, 20));
 
-        // Logo
-        JLabel logo = new JLabel("🏦 BankPro");
+        JLabel logo = new JLabel("\uD83C\uDFE6 BankPro");
         logo.setFont(Theme.FONT_HEADING);
         logo.setForeground(Color.WHITE);
         logo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel userLabel = new JLabel("👤 " + currentUser.getFullName());
+        JLabel userLabel = new JLabel("\uD83D\uDC64 " + currentUser.getFullName());
         userLabel.setFont(Theme.FONT_SMALL);
         userLabel.setForeground(Theme.BG_SURFACE);
         userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -91,17 +102,20 @@ public class CustomerDashboard extends JFrame {
         sidebar.add(Box.createVerticalStrut(18));
 
         String[][] navItems = {
-                { "🏠", "Dashboard", "DASHBOARD" },
-                { "💳", "My Accounts", "ACCOUNTS" },
-                { "💰", "Deposit", "DEPOSIT" },
-                { "🏧", "Withdraw", "WITHDRAW" },
-                { "↔️", "Transfer", "TRANSFER" },
-                { "📋", "History", "HISTORY" },
+                { "\uD83C\uDFE0", "Dashboard", "DASHBOARD" },
+                { "\uD83D\uDCB3", "My Accounts", "ACCOUNTS" },
+                { "\uD83D\uDCB0", "Deposit", "DEPOSIT" },
+                { "\uD83C\uDF7F", "Withdraw", "WITHDRAW" },
+                { "\u2194\uFE0F", "Transfer", "TRANSFER" },
+                { "\uD83D\uDCCB", "History", "HISTORY" },
+                { "\uD83C\uDF9E", "Loans", "LOANS" },
+                { "\uD83D\uDC65", "Beneficiaries", "BENEFICIARIES" },
+                { "\uD83D\uDCC5", "Scheduled", "SCHEDULED" },
         };
 
         for (String[] item : navItems) {
             sidebar.add(createNavButton(item[0] + "  " + item[1], item[2]));
-            sidebar.add(Box.createVerticalStrut(6));
+            sidebar.add(Box.createVerticalStrut(4));
         }
 
         sidebar.add(Box.createVerticalGlue());
@@ -139,8 +153,8 @@ public class CustomerDashboard extends JFrame {
         btn.setForeground(Color.WHITE);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
-        btn.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        btn.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
         btn.addActionListener(e -> {
             contentLayout.show(mainContent, panel);
             if (panel.equals("ACCOUNTS"))
@@ -151,17 +165,38 @@ public class CustomerDashboard extends JFrame {
                 refreshDashboard();
             else if (panel.equals("DEPOSIT") || panel.equals("WITHDRAW") || panel.equals("TRANSFER"))
                 refreshTransactionPanels();
+            else if (panel.equals("LOANS"))
+                refreshLoansPanel();
+            else if (panel.equals("BENEFICIARIES"))
+                refreshBeneficiariesPanel();
+            else if (panel.equals("SCHEDULED"))
+                refreshScheduledPanel();
         });
         return btn;
     }
+
+    // ===================== PIN VERIFICATION HELPER =====================
+
+    private boolean verifyPin() {
+        return PinDialog.verify(this, currentUser);
+    }
+
+    // ===================== RECEIPT HELPER =====================
+
+    private void showReceipt(Transaction tx, String accNumber) {
+        if (tx != null) {
+            ReceiptDialog.show(this, tx, accNumber, currentUser.getFullName());
+        }
+    }
+
+    // ===================== DASHBOARD PANEL =====================
 
     private JPanel buildDashboardPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 18));
         panel.setBackground(Theme.BG_SUBTLE);
         panel.setBorder(BorderFactory.createEmptyBorder(28, 28, 28, 28));
 
-        // Header
-        JLabel title = new JLabel("Welcome back, " + currentUser.getFullName() + "! 👋");
+        JLabel title = new JLabel("Welcome back, " + currentUser.getFullName() + "! \uD83D\uDC4B");
         title.setFont(Theme.FONT_TITLE);
         title.setForeground(Theme.ACCENT_NAVY);
 
@@ -176,7 +211,6 @@ public class CustomerDashboard extends JFrame {
         header.add(Box.createVerticalStrut(6));
         header.add(sub);
 
-        // Stats
         JPanel stats = new JPanel(new GridLayout(1, 3, 16, 0));
         stats.setOpaque(false);
 
@@ -185,14 +219,13 @@ public class CustomerDashboard extends JFrame {
         long activeAccounts = accounts.stream().filter(Account::isActive).count();
         long totalTxns = bankingService.getUserTransactions(currentUser.getId()).size();
 
-        stats.add(buildStatCard("💰 Total Balance",
+        stats.add(buildStatCard("\uD83D\uDCB0 Total Balance",
                 String.format("$%,.2f", totalBalance), Theme.ACCENT_BLUE, "All accounts combined"));
-        stats.add(buildStatCard("💳 Active Accounts",
+        stats.add(buildStatCard("\uD83D\uDCB3 Active Accounts",
                 String.valueOf(activeAccounts), Theme.ACCENT_ORANGE, "Open accounts"));
-        stats.add(buildStatCard("📋 Transactions",
+        stats.add(buildStatCard("\uD83D\uDCCB Transactions",
                 String.valueOf(totalTxns), Theme.ACCENT_TEAL, "All time"));
 
-        // Recent accounts
         JLabel accTitle = new JLabel("Your Accounts");
         accTitle.setFont(Theme.FONT_HEADING);
         accTitle.setForeground(Theme.TEXT_PRIMARY);
@@ -274,7 +307,7 @@ public class CustomerDashboard extends JFrame {
         type.setFont(Theme.FONT_SUBHEAD);
         type.setForeground(Theme.ACCENT_BLUE);
 
-        JLabel num = new JLabel("●●●● " + acc.getAccountNumber().substring(6));
+        JLabel num = new JLabel("\u25CF\u25CF\u25CF\u25CF " + acc.getAccountNumber().substring(6));
         num.setFont(Theme.FONT_MONO);
         num.setForeground(Theme.TEXT_SECONDARY);
 
@@ -306,7 +339,6 @@ public class CustomerDashboard extends JFrame {
         title.setFont(Theme.FONT_TITLE);
         title.setForeground(Theme.TEXT_PRIMARY);
 
-        // Create account section
         CardPanel createCard = new CardPanel();
         createCard.setBackground(Theme.BG_CARD);
         createCard.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 12));
@@ -453,7 +485,7 @@ public class CustomerDashboard extends JFrame {
     private StyledTextField depositNote;
 
     private JPanel buildDepositPanel() {
-        JPanel panel = makeTransactionPanel("💰 Deposit Funds", Theme.SUCCESS);
+        JPanel panel = makeTransactionPanel("\uD83D\uDCB0 Deposit Funds", Theme.SUCCESS);
 
         CardPanel card = new CardPanel();
         card.setBackground(Theme.BG_CARD);
@@ -482,11 +514,10 @@ public class CustomerDashboard extends JFrame {
                 BankingService.TransactionResult res = bankingService.deposit(
                         accId, currentUser.getId(), amt, depositNote.getText().trim(), "ONLINE");
                 if (res != null && res.isSuccess()) {
-                    JOptionPane.showMessageDialog(this, String.format("✅ $%.2f deposited successfully!", amt),
-                            "Success", JOptionPane.INFORMATION_MESSAGE);
                     depositAmount.setText("");
                     depositNote.setText("");
                     refreshTransactionPanels();
+                    showReceipt(res.getTransaction(), getAccountNumberFromId(accId));
                 } else
                     showError(res != null && res.getErrorMessage() != null ? res.getErrorMessage()
                             : "Deposit failed. Check amount.");
@@ -519,7 +550,7 @@ public class CustomerDashboard extends JFrame {
     private StyledTextField withdrawNote;
 
     private JPanel buildWithdrawPanel() {
-        JPanel panel = makeTransactionPanel("🏧 Withdraw Funds", Theme.WARNING);
+        JPanel panel = makeTransactionPanel("\uD83C\uDF7F Withdraw Funds", Theme.WARNING);
 
         CardPanel card = new CardPanel();
         card.setBackground(Theme.BG_CARD);
@@ -538,6 +569,7 @@ public class CustomerDashboard extends JFrame {
         btn.setForeground(Theme.BG_DARK);
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         btn.addActionListener(e -> {
+            if (!verifyPin()) return;
             try {
                 String sel = (String) withdrawAccBox.getSelectedItem();
                 if (sel == null) {
@@ -549,11 +581,10 @@ public class CustomerDashboard extends JFrame {
                 BankingService.TransactionResult res = bankingService.withdraw(
                         accId, currentUser.getId(), amt, withdrawNote.getText().trim(), "ONLINE");
                 if (res != null && res.isSuccess()) {
-                    JOptionPane.showMessageDialog(this, String.format("✅ $%.2f withdrawn successfully!", amt),
-                            "Success", JOptionPane.INFORMATION_MESSAGE);
                     withdrawAmount.setText("");
                     withdrawNote.setText("");
                     refreshTransactionPanels();
+                    showReceipt(res.getTransaction(), getAccountNumberFromId(accId));
                 } else
                     showError(res != null && res.getErrorMessage() != null ? res.getErrorMessage()
                             : "Insufficient balance or invalid amount.");
@@ -582,12 +613,15 @@ public class CustomerDashboard extends JFrame {
 
     // ===================== TRANSFER PANEL =====================
     private JComboBox<String> transferFromBox;
+    private JComboBox<String> transferBeneficiaryBox;
     private StyledTextField transferToNumber;
     private StyledTextField transferAmount;
     private StyledTextField transferNote;
+    private JCheckBox transferSaveBeneficiary;
+    private StyledTextField transferBeneficiaryName;
 
     private JPanel buildTransferPanel() {
-        JPanel panel = makeTransactionPanel("↔️ Transfer Funds", Theme.ACCENT_BLUE);
+        JPanel panel = makeTransactionPanel("\u2194\uFE0F Transfer Funds", Theme.ACCENT_BLUE);
 
         CardPanel card = new CardPanel();
         card.setBackground(Theme.BG_CARD);
@@ -599,13 +633,39 @@ public class CustomerDashboard extends JFrame {
         transferFromBox.setForeground(Theme.TEXT_PRIMARY);
         transferFromBox.setFont(Theme.FONT_BODY);
 
+        // Beneficiary quick-pick
+        transferBeneficiaryBox = new JComboBox<>();
+        transferBeneficiaryBox.setBackground(Theme.BG_INPUT);
+        transferBeneficiaryBox.setForeground(Theme.TEXT_PRIMARY);
+        transferBeneficiaryBox.setFont(Theme.FONT_BODY);
+        transferBeneficiaryBox.addItem("-- Select Beneficiary (optional) --");
+
+        transferBeneficiaryBox.addActionListener(e -> {
+            int idx = transferBeneficiaryBox.getSelectedIndex();
+            if (idx > 0) {
+                List<Beneficiary> bens = bankingService.getBeneficiaries(currentUser.getId());
+                if (idx - 1 < bens.size()) {
+                    transferToNumber.setText(bens.get(idx - 1).getAccountNumber());
+                }
+            }
+        });
+
         transferToNumber = new StyledTextField("Recipient Account Number");
         transferAmount = new StyledTextField("Amount to Transfer");
         transferNote = new StyledTextField("Transfer Note (optional)");
 
+        transferSaveBeneficiary = new JCheckBox("Save as Beneficiary");
+        transferSaveBeneficiary.setFont(Theme.FONT_SMALL);
+        transferSaveBeneficiary.setForeground(Theme.TEXT_SECONDARY);
+        transferSaveBeneficiary.setOpaque(false);
+
+        transferBeneficiaryName = new StyledTextField("Beneficiary Name (if saving)");
+        transferBeneficiaryName.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+
         GradientButton btn = new GradientButton("Send Transfer");
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         btn.addActionListener(e -> {
+            if (!verifyPin()) return;
             try {
                 String sel = (String) transferFromBox.getSelectedItem();
                 if (sel == null) {
@@ -615,16 +675,21 @@ public class CustomerDashboard extends JFrame {
                 String accId = getAccountIdFromLabel(sel);
                 String toNumber = transferToNumber.getText().trim();
                 double amt = Double.parseDouble(transferAmount.getText().trim());
+
+                boolean saveBene = transferSaveBeneficiary.isSelected();
+                String beneName = saveBene ? transferBeneficiaryName.getText().trim() : null;
+
                 BankingService.TransactionResult res = bankingService.transfer(
                         accId, toNumber, currentUser.getId(), amt,
-                        transferNote.getText().trim(), false, null, null);
+                        transferNote.getText().trim(), saveBene, beneName, null);
                 if (res != null && res.isSuccess()) {
-                    JOptionPane.showMessageDialog(this, String.format("✅ $%.2f transferred successfully!", amt),
-                            "Success", JOptionPane.INFORMATION_MESSAGE);
                     transferToNumber.setText("");
                     transferAmount.setText("");
                     transferNote.setText("");
+                    transferBeneficiaryName.setText("");
+                    transferSaveBeneficiary.setSelected(false);
                     refreshTransactionPanels();
+                    showReceipt(res.getTransaction(), getAccountNumberFromId(accId));
                 } else
                     showError(
                             res != null && res.getErrorMessage() != null ? res.getErrorMessage() : "Transfer failed.");
@@ -636,7 +701,11 @@ public class CustomerDashboard extends JFrame {
         card.add(makeLabel("From Account"));
         card.add(Box.createVerticalStrut(6));
         card.add(transferFromBox);
-        card.add(Box.createVerticalStrut(16));
+        card.add(Box.createVerticalStrut(12));
+        card.add(makeLabel("Quick Pick Beneficiary"));
+        card.add(Box.createVerticalStrut(6));
+        card.add(transferBeneficiaryBox);
+        card.add(Box.createVerticalStrut(12));
         card.add(makeLabel("To Account Number"));
         card.add(Box.createVerticalStrut(6));
         card.add(transferToNumber);
@@ -648,6 +717,10 @@ public class CustomerDashboard extends JFrame {
         card.add(makeLabel("Note"));
         card.add(Box.createVerticalStrut(6));
         card.add(transferNote);
+        card.add(Box.createVerticalStrut(12));
+        card.add(transferSaveBeneficiary);
+        card.add(Box.createVerticalStrut(4));
+        card.add(transferBeneficiaryName);
         card.add(Box.createVerticalStrut(24));
         card.add(btn);
 
@@ -657,19 +730,19 @@ public class CustomerDashboard extends JFrame {
 
     private void refreshTransactionPanels() {
         List<Account> accounts = bankingService.getUserAccounts(currentUser.getId());
-        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-        for (Account acc : accounts) {
-            if (acc.isActive()) {
-                model.addElement(acc.getAccountNumber() + " - " + acc.getTypeDisplay() +
-                        " (" + acc.getFormattedBalance() + ") [" + acc.getId() + "]");
-            }
-        }
         if (depositAccBox != null)
             depositAccBox.setModel(new DefaultComboBoxModel<>(getAccountLabels(accounts)));
         if (withdrawAccBox != null)
             withdrawAccBox.setModel(new DefaultComboBoxModel<>(getAccountLabels(accounts)));
         if (transferFromBox != null)
             transferFromBox.setModel(new DefaultComboBoxModel<>(getAccountLabels(accounts)));
+        if (transferBeneficiaryBox != null) {
+            transferBeneficiaryBox.removeAllItems();
+            transferBeneficiaryBox.addItem("-- Select Beneficiary (optional) --");
+            for (Beneficiary b : bankingService.getBeneficiaries(currentUser.getId())) {
+                transferBeneficiaryBox.addItem(b.getDisplayName() + " — " + b.getAccountNumber());
+            }
+        }
     }
 
     private String[] getAccountLabels(List<Account> accounts) {
@@ -681,6 +754,13 @@ public class CustomerDashboard extends JFrame {
 
     private String getAccountIdFromLabel(String label) {
         return label.substring(label.lastIndexOf('[') + 1, label.lastIndexOf(']'));
+    }
+
+    private String getAccountNumberFromId(String accountId) {
+        return bankingService.getUserAccounts(currentUser.getId()).stream()
+                .filter(a -> a.getId().equals(accountId))
+                .map(Account::getAccountNumber)
+                .findFirst().orElse("N/A");
     }
 
     // ===================== HISTORY PANEL =====================
@@ -717,7 +797,6 @@ public class CustomerDashboard extends JFrame {
         historyTable.getTableHeader().setFont(Theme.FONT_SUBHEAD);
         historyTable.getTableHeader().setReorderingAllowed(false);
 
-        // Custom cell renderer for amount coloring
         historyTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -769,6 +848,599 @@ public class CustomerDashboard extends JFrame {
                     tx.getDescription()
             });
         }
+    }
+
+    // ===================== LOANS PANEL =====================
+    private JPanel loansPanel;
+    private DefaultTableModel loansModel;
+
+    private JPanel buildLoansPanel() {
+        loansPanel = new JPanel(new BorderLayout(0, 16));
+        loansPanel.setBackground(Theme.BG_DARK);
+        loansPanel.setBorder(BorderFactory.createEmptyBorder(28, 28, 28, 28));
+
+        JLabel title = new JLabel("Loans");
+        title.setFont(Theme.FONT_TITLE);
+        title.setForeground(Theme.TEXT_PRIMARY);
+
+        // === Apply for Loan Section ===
+        CardPanel applyCard = new CardPanel();
+        applyCard.setBackground(Theme.BG_CARD);
+        applyCard.setLayout(new BoxLayout(applyCard, BoxLayout.Y_AXIS));
+        applyCard.setBorder(BorderFactory.createEmptyBorder(18, 20, 18, 20));
+
+        JLabel applyTitle = new JLabel("Apply for a Loan");
+        applyTitle.setFont(Theme.FONT_HEADING);
+        applyTitle.setForeground(Theme.ACCENT_BLUE);
+        applyTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel applyForm = new JPanel(new GridLayout(2, 4, 10, 8));
+        applyForm.setOpaque(false);
+        applyForm.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+
+        JComboBox<Loan.LoanType> loanTypeBox = new JComboBox<>(Loan.LoanType.values());
+        loanTypeBox.setBackground(Theme.BG_INPUT);
+        loanTypeBox.setForeground(Theme.TEXT_PRIMARY);
+        loanTypeBox.setFont(Theme.FONT_BODY);
+
+        JComboBox<String> loanAccBox = new JComboBox<>();
+        loanAccBox.setBackground(Theme.BG_INPUT);
+        loanAccBox.setForeground(Theme.TEXT_PRIMARY);
+        loanAccBox.setFont(Theme.FONT_BODY);
+
+        StyledTextField loanAmountField = new StyledTextField("Loan Amount ($)");
+        StyledTextField loanTenureField = new StyledTextField("Tenure (months)");
+        StyledTextField loanPurposeField = new StyledTextField("Purpose");
+
+        GradientButton applyBtn = new GradientButton("Apply", Theme.ACCENT_TEAL, Theme.ACCENT_BLUE);
+        applyBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Fill account dropdown
+        List<Account> userAccounts = bankingService.getUserAccounts(currentUser.getId());
+        for (Account a : userAccounts) {
+            if (a.isActive())
+                loanAccBox.addItem(a.getAccountNumber() + " [" + a.getId() + "]");
+        }
+
+        applyBtn.addActionListener(e -> {
+            try {
+                String accSel = (String) loanAccBox.getSelectedItem();
+                if (accSel == null) { showError("Select a credit account."); return; }
+                String accId = accSel.substring(accSel.lastIndexOf('[') + 1, accSel.lastIndexOf(']'));
+                double amount = Double.parseDouble(loanAmountField.getText().trim());
+                int tenure = Integer.parseInt(loanTenureField.getText().trim());
+                Loan.LoanType type = (Loan.LoanType) loanTypeBox.getSelectedItem();
+                String purpose = loanPurposeField.getText().trim();
+
+                Loan loan = loanService.applyForLoan(currentUser.getId(), accId, type, amount, tenure, purpose);
+                if (loan != null) {
+                    JOptionPane.showMessageDialog(this,
+                            "Loan application submitted!\nType: " + loan.getTypeDisplay() +
+                                    "\nAmount: " + loan.getFormattedPrincipal() +
+                                    "\nEMI: " + loan.getFormattedEmi(),
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                    loanAmountField.setText("");
+                    loanTenureField.setText("");
+                    loanPurposeField.setText("");
+                    refreshLoansPanel();
+                } else {
+                    showError("Loan application failed. Check amount/limits.");
+                }
+            } catch (NumberFormatException ex) {
+                showError("Enter valid amount and tenure.");
+            }
+        });
+
+        applyForm.add(applyTitle);
+        applyForm.add(loanTypeBox);
+        applyForm.add(loanAccBox);
+        applyForm.add(loanAmountField);
+        applyForm.add(loanTenureField);
+        applyForm.add(loanPurposeField);
+        applyForm.add(applyBtn);
+
+        applyCard.add(applyTitle);
+        applyCard.add(Box.createVerticalStrut(10));
+        applyCard.add(applyForm);
+
+        // === My Loans Table ===
+        JLabel myLoansTitle = new JLabel("My Loans");
+        myLoansTitle.setFont(Theme.FONT_HEADING);
+        myLoansTitle.setForeground(Theme.TEXT_PRIMARY);
+
+        String[] cols = { "ID", "Type", "Principal", "EMI", "Outstanding", "Status", "Progress", "" };
+        loansModel = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return c == 7; }
+        };
+        JTable loansTable = new JTable(loansModel);
+        loansTable.setBackground(Theme.BG_SURFACE);
+        loansTable.setForeground(Theme.TEXT_PRIMARY);
+        loansTable.setFont(Theme.FONT_BODY);
+        loansTable.setRowHeight(36);
+        loansTable.setShowGrid(false);
+        loansTable.setSelectionBackground(Theme.BG_HOVER);
+        loansTable.getTableHeader().setBackground(Theme.BG_CARD);
+        loansTable.getTableHeader().setForeground(Theme.ACCENT_BLUE);
+        loansTable.getTableHeader().setFont(Theme.FONT_SUBHEAD);
+        loansTable.getColumnModel().getColumn(0).setMinWidth(0);
+        loansTable.getColumnModel().getColumn(0).setMaxWidth(0);
+        loansTable.getColumnModel().getColumn(0).setPreferredWidth(0);
+
+        // Repay button column
+        loansTable.getColumnModel().getColumn(7).setCellRenderer(new JButtonRenderer("Repay"));
+        loansTable.getColumnModel().getColumn(7).setCellEditor(new RepayButtonEditor(loansTable));
+
+        JScrollPane loansScroll = new JScrollPane(loansTable);
+        loansScroll.setBackground(Theme.BG_DARK);
+        loansScroll.getViewport().setBackground(Theme.BG_SURFACE);
+        loansScroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+        top.add(title, BorderLayout.WEST);
+
+        JPanel tableSection = new JPanel(new BorderLayout(0, 10));
+        tableSection.setOpaque(false);
+        tableSection.add(myLoansTitle, BorderLayout.NORTH);
+        tableSection.add(loansScroll, BorderLayout.CENTER);
+
+        loansPanel.add(top, BorderLayout.NORTH);
+        loansPanel.add(applyCard, BorderLayout.CENTER);
+        loansPanel.add(tableSection, BorderLayout.SOUTH);
+
+        refreshLoansPanel();
+        return loansPanel;
+    }
+
+    private void refreshLoansPanel() {
+        if (loansModel == null) return;
+        loansModel.setRowCount(0);
+        List<Loan> loans = loanService.getUserLoans(currentUser.getId());
+        for (Loan loan : loans) {
+            loansModel.addRow(new Object[] {
+                    loan.getId(),
+                    loan.getTypeDisplay(),
+                    loan.getFormattedPrincipal(),
+                    loan.getFormattedEmi(),
+                    loan.getFormattedOutstanding(),
+                    loan.getStatus(),
+                    String.format("%.0f%%", loan.getProgressPercent()),
+                    loan.getStatus() == Loan.LoanStatus.ACTIVE ? "Repay" : ""
+            });
+        }
+    }
+
+    // === Repay Loan Button Renderer/Editor ===
+
+    private class JButtonRenderer extends JButton implements TableCellRenderer {
+        JButtonRenderer(String text) { setText(text); setFont(Theme.FONT_SMALL); }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable t, Object val,
+                boolean sel, boolean focus, int row, int col) {
+            setEnabled(val != null && !val.toString().isEmpty());
+            return this;
+        }
+    }
+
+    private class RepayButtonEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JButton btn;
+        private String loanId;
+
+        RepayButtonEditor(JTable table) {
+            btn = new JButton("Repay");
+            btn.setFont(Theme.FONT_SMALL);
+            btn.setBackground(Theme.ACCENT_TEAL);
+            btn.setForeground(Color.WHITE);
+            btn.setFocusPainted(false);
+            btn.addActionListener(e -> {
+                if (loanId == null) return;
+                if (!verifyPin()) { fireEditingStopped(); return; }
+
+                Loan loan = loanService.getLoanById(loanId);
+                if (loan == null) { fireEditingStopped(); return; }
+
+                // Pick repayment amount
+                JPanel panel = new JPanel(new GridLayout(0, 1, 0, 8));
+                panel.setBackground(Theme.BG_CARD);
+
+                JComboBox<String> accBox = new JComboBox<>();
+                for (Account a : bankingService.getUserAccounts(currentUser.getId())) {
+                    if (a.isActive() && a.getType() != Account.AccountType.FIXED_DEPOSIT)
+                        accBox.addItem(a.getAccountNumber() + " (" + a.getFormattedBalance() + ") [" + a.getId() + "]");
+                }
+
+                StyledTextField amtField = new StyledTextField("Repayment Amount ($)");
+                amtField.setText(String.format("%.2f", loan.getEmiAmount()));
+
+                panel.add(new JLabel("From Account:") {{ setForeground(Theme.TEXT_PRIMARY); }});
+                panel.add(accBox);
+                panel.add(new JLabel("Amount:") {{ setForeground(Theme.TEXT_PRIMARY); }});
+                panel.add(amtField);
+
+                int res = JOptionPane.showConfirmDialog(CustomerDashboard.this, panel,
+                        "Repay Loan — " + loan.getTypeDisplay(),
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                if (res == JOptionPane.OK_OPTION) {
+                    try {
+                        String accSel = (String) accBox.getSelectedItem();
+                        String accId = accSel.substring(accSel.lastIndexOf('[') + 1, accSel.lastIndexOf(']'));
+                        double amt = Double.parseDouble(amtField.getText().trim());
+                        BankingService.TransactionResult result = loanService.makeRepayment(
+                                loanId, accId, currentUser.getId(), amt);
+                        if (result.isSuccess()) {
+                            refreshLoansPanel();
+                            showReceipt(result.getTransaction(),
+                                    getAccountNumberFromId(accId));
+                        } else {
+                            showError(result.getErrorMessage());
+                        }
+                    } catch (Exception ex) {
+                        showError("Invalid input.");
+                    }
+                }
+                fireEditingStopped();
+            });
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable t, Object val,
+                boolean sel, int row, int col) {
+            loanId = (val != null && !val.toString().isEmpty()) ? (String) t.getValueAt(row, 0) : null;
+            btn.setText(val != null && !val.toString().isEmpty() ? "Repay" : "");
+            btn.setEnabled(val != null && !val.toString().isEmpty());
+            return btn;
+        }
+
+        @Override
+        public Object getCellEditorValue() { return btn.getText(); }
+    }
+
+    // ===================== BENEFICIARIES PANEL =====================
+    private JPanel beneficiariesPanel;
+    private DefaultTableModel beneficiariesModel;
+
+    private JPanel buildBeneficiariesPanel() {
+        beneficiariesPanel = new JPanel(new BorderLayout(0, 16));
+        beneficiariesPanel.setBackground(Theme.BG_DARK);
+        beneficiariesPanel.setBorder(BorderFactory.createEmptyBorder(28, 28, 28, 28));
+
+        JLabel title = new JLabel("Manage Beneficiaries");
+        title.setFont(Theme.FONT_TITLE);
+        title.setForeground(Theme.TEXT_PRIMARY);
+
+        // Add beneficiary form
+        CardPanel addCard = new CardPanel();
+        addCard.setBackground(Theme.BG_CARD);
+        addCard.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        addCard.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+
+        StyledTextField nameField = new StyledTextField("Full Name");
+        nameField.setPreferredSize(new Dimension(160, 36));
+        StyledTextField accNumField = new StyledTextField("Account Number");
+        accNumField.setPreferredSize(new Dimension(180, 36));
+        StyledTextField nickField = new StyledTextField("Nickname (optional)");
+        nickField.setPreferredSize(new Dimension(140, 36));
+
+        GradientButton addBtn = new GradientButton("+ Add Beneficiary", Theme.ACCENT_TEAL, Theme.ACCENT_BLUE);
+        addBtn.setPreferredSize(new Dimension(170, 36));
+        addBtn.addActionListener(e -> {
+            String name = nameField.getText().trim();
+            String accNum = accNumField.getText().trim();
+            String nick = nickField.getText().trim();
+            if (name.isEmpty() || accNum.isEmpty()) {
+                showError("Name and account number are required.");
+                return;
+            }
+            // Check account exists
+            var target = bankingService.getAllAccounts().stream()
+                    .filter(a -> a.getAccountNumber().equals(accNum) && a.isActive())
+                    .findFirst();
+            if (target.isEmpty()) {
+                showError("Account number not found or inactive.");
+                return;
+            }
+            boolean exists = bankingService.getBeneficiaries(currentUser.getId()).stream()
+                    .anyMatch(b -> b.getAccountNumber().equals(accNum));
+            if (exists) {
+                showError("Beneficiary with this account number already exists.");
+                return;
+            }
+            Beneficiary ben = new Beneficiary(currentUser.getId(), name, accNum, nick);
+            bankingService.addBeneficiary(ben);
+            JOptionPane.showMessageDialog(this, "Beneficiary added!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            nameField.setText("");
+            accNumField.setText("");
+            nickField.setText("");
+            refreshBeneficiariesPanel();
+        });
+
+        addCard.add(new JLabel("Add:") {{
+            setForeground(Theme.TEXT_SECONDARY);
+            setFont(Theme.FONT_SUBHEAD);
+        }});
+        addCard.add(nameField);
+        addCard.add(accNumField);
+        addCard.add(nickField);
+        addCard.add(addBtn);
+
+        // Table
+        String[] cols = { "Name", "Nickname", "Account Number", "Added", "Actions" };
+        beneficiariesModel = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return c == 4; }
+        };
+        JTable table = new JTable(beneficiariesModel);
+        table.setBackground(Theme.BG_SURFACE);
+        table.setForeground(Theme.TEXT_PRIMARY);
+        table.setFont(Theme.FONT_BODY);
+        table.setRowHeight(36);
+        table.setShowGrid(false);
+        table.getTableHeader().setBackground(Theme.BG_CARD);
+        table.getTableHeader().setForeground(Theme.ACCENT_BLUE);
+        table.getTableHeader().setFont(Theme.FONT_SUBHEAD);
+        table.getColumnModel().getColumn(4).setCellRenderer(new JButtonRenderer("Remove"));
+        table.getColumnModel().getColumn(4).setCellEditor(new RemoveBeneficiaryEditor(table));
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBackground(Theme.BG_DARK);
+        scroll.getViewport().setBackground(Theme.BG_SURFACE);
+        scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+        top.add(title, BorderLayout.WEST);
+
+        beneficiariesPanel.add(top, BorderLayout.NORTH);
+        beneficiariesPanel.add(addCard, BorderLayout.CENTER);
+        beneficiariesPanel.add(scroll, BorderLayout.SOUTH);
+
+        refreshBeneficiariesPanel();
+        return beneficiariesPanel;
+    }
+
+    private void refreshBeneficiariesPanel() {
+        if (beneficiariesModel == null) return;
+        beneficiariesModel.setRowCount(0);
+        for (Beneficiary b : bankingService.getBeneficiaries(currentUser.getId())) {
+            beneficiariesModel.addRow(new Object[] {
+                    b.getName(), b.getNickname(), b.getAccountNumber(),
+                    b.getAddedAt().toLocalDate(), "Remove"
+            });
+        }
+    }
+
+    private class RemoveBeneficiaryEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JButton btn;
+        private int editRow;
+
+        RemoveBeneficiaryEditor(JTable table) {
+            btn = new JButton("Remove");
+            btn.setFont(Theme.FONT_SMALL);
+            btn.setBackground(Theme.DANGER);
+            btn.setForeground(Color.WHITE);
+            btn.setFocusPainted(false);
+            btn.addActionListener(e -> {
+                List<Beneficiary> bens = bankingService.getBeneficiaries(currentUser.getId());
+                if (editRow >= 0 && editRow < bens.size()) {
+                    int conf = JOptionPane.showConfirmDialog(CustomerDashboard.this,
+                            "Remove " + bens.get(editRow).getName() + "?",
+                            "Confirm", JOptionPane.YES_NO_OPTION);
+                    if (conf == JOptionPane.YES_OPTION) {
+                        bankingService.removeBeneficiary(bens.get(editRow).getId());
+                        refreshBeneficiariesPanel();
+                    }
+                }
+                fireEditingStopped();
+            });
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable t, Object val,
+                boolean sel, int row, int col) {
+            editRow = row;
+            return btn;
+        }
+
+        @Override
+        public Object getCellEditorValue() { return "Remove"; }
+    }
+
+    // ===================== SCHEDULED TRANSFERS PANEL =====================
+    private JPanel scheduledPanel;
+    private DefaultTableModel scheduledModel;
+
+    private JPanel buildScheduledPanel() {
+        scheduledPanel = new JPanel(new BorderLayout(0, 16));
+        scheduledPanel.setBackground(Theme.BG_DARK);
+        scheduledPanel.setBorder(BorderFactory.createEmptyBorder(28, 28, 28, 28));
+
+        JLabel title = new JLabel("Scheduled Transfers");
+        title.setFont(Theme.FONT_TITLE);
+        title.setForeground(Theme.TEXT_PRIMARY);
+
+        // Create form
+        CardPanel createCard = new CardPanel();
+        createCard.setBackground(Theme.BG_CARD);
+        createCard.setLayout(new BoxLayout(createCard, BoxLayout.Y_AXIS));
+        createCard.setBorder(BorderFactory.createEmptyBorder(18, 20, 18, 20));
+
+        JLabel formTitle = new JLabel("Schedule a Transfer");
+        formTitle.setFont(Theme.FONT_HEADING);
+        formTitle.setForeground(Theme.ACCENT_BLUE);
+        formTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel form = new JPanel(new GridLayout(2, 4, 10, 8));
+        form.setOpaque(false);
+        form.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+
+        JComboBox<String> schedFromBox = new JComboBox<>();
+        schedFromBox.setBackground(Theme.BG_INPUT);
+        schedFromBox.setForeground(Theme.TEXT_PRIMARY);
+        schedFromBox.setFont(Theme.FONT_BODY);
+
+        StyledTextField schedToField = new StyledTextField("Recipient Account No.");
+        StyledTextField schedAmountField = new StyledTextField("Amount ($)");
+        StyledTextField schedDateField = new StyledTextField("Date (YYYY-MM-DD)");
+        schedDateField.setText(LocalDate.now().toString());
+        StyledTextField schedDescField = new StyledTextField("Description");
+
+        JCheckBox recurringBox = new JCheckBox("Monthly Recurring");
+        recurringBox.setFont(Theme.FONT_SMALL);
+        recurringBox.setForeground(Theme.TEXT_SECONDARY);
+        recurringBox.setOpaque(false);
+
+        GradientButton createBtn = new GradientButton("Schedule", Theme.ACCENT_TEAL, Theme.ACCENT_BLUE);
+
+        // Fill account dropdown
+        for (Account a : bankingService.getUserAccounts(currentUser.getId())) {
+            if (a.isActive() && a.getType() != Account.AccountType.FIXED_DEPOSIT)
+                schedFromBox.addItem(a.getAccountNumber() + " [" + a.getId() + "]");
+        }
+
+        createBtn.addActionListener(e -> {
+            try {
+                String fromSel = (String) schedFromBox.getSelectedItem();
+                if (fromSel == null) { showError("Select source account."); return; }
+                String accId = fromSel.substring(fromSel.lastIndexOf('[') + 1, fromSel.lastIndexOf(']'));
+                String toAccNum = schedToField.getText().trim();
+                double amount = Double.parseDouble(schedAmountField.getText().trim());
+                LocalDate date = LocalDate.parse(schedDateField.getText().trim());
+                String desc = schedDescField.getText().trim();
+                boolean recurring = recurringBox.isSelected();
+
+                BankingService.TransactionResult res = extService.scheduleTransfer(
+                        currentUser.getId(), accId, toAccNum, amount, desc, date, recurring);
+                if (res.isSuccess()) {
+                    JOptionPane.showMessageDialog(this,
+                            "Transfer scheduled for " + date + "!",
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                    schedToField.setText("");
+                    schedAmountField.setText("");
+                    schedDescField.setText("");
+                    refreshScheduledPanel();
+                } else {
+                    showError(res.getErrorMessage());
+                }
+            } catch (NumberFormatException ex) {
+                showError("Enter a valid amount.");
+            } catch (java.time.format.DateTimeParseException ex) {
+                showError("Invalid date format. Use YYYY-MM-DD.");
+            }
+        });
+
+        form.add(schedFromBox);
+        form.add(schedToField);
+        form.add(schedAmountField);
+        form.add(schedDateField);
+        form.add(schedDescField);
+        form.add(recurringBox);
+        form.add(createBtn);
+
+        createCard.add(formTitle);
+        createCard.add(Box.createVerticalStrut(10));
+        createCard.add(form);
+
+        // Table
+        JLabel listTitle = new JLabel("My Scheduled Transfers");
+        listTitle.setFont(Theme.FONT_HEADING);
+        listTitle.setForeground(Theme.TEXT_PRIMARY);
+
+        String[] cols = { "ID", "To Account", "Amount", "Scheduled Date", "Recurring", "Status", "" };
+        scheduledModel = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return c == 6; }
+        };
+        JTable schedTable = new JTable(scheduledModel);
+        schedTable.setBackground(Theme.BG_SURFACE);
+        schedTable.setForeground(Theme.TEXT_PRIMARY);
+        schedTable.setFont(Theme.FONT_BODY);
+        schedTable.setRowHeight(36);
+        schedTable.setShowGrid(false);
+        schedTable.getTableHeader().setBackground(Theme.BG_CARD);
+        schedTable.getTableHeader().setForeground(Theme.ACCENT_BLUE);
+        schedTable.getTableHeader().setFont(Theme.FONT_SUBHEAD);
+        schedTable.getColumnModel().getColumn(0).setMinWidth(0);
+        schedTable.getColumnModel().getColumn(0).setMaxWidth(0);
+        schedTable.getColumnModel().getColumn(0).setPreferredWidth(0);
+        schedTable.getColumnModel().getColumn(6).setCellRenderer(new JButtonRenderer("Cancel"));
+        schedTable.getColumnModel().getColumn(6).setCellEditor(new CancelScheduledEditor(schedTable));
+
+        JScrollPane scroll = new JScrollPane(schedTable);
+        scroll.setBackground(Theme.BG_DARK);
+        scroll.getViewport().setBackground(Theme.BG_SURFACE);
+        scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+        top.add(title, BorderLayout.WEST);
+
+        JPanel tableSection = new JPanel(new BorderLayout(0, 10));
+        tableSection.setOpaque(false);
+        tableSection.add(listTitle, BorderLayout.NORTH);
+        tableSection.add(scroll, BorderLayout.CENTER);
+
+        scheduledPanel.add(top, BorderLayout.NORTH);
+        scheduledPanel.add(createCard, BorderLayout.CENTER);
+        scheduledPanel.add(tableSection, BorderLayout.SOUTH);
+
+        refreshScheduledPanel();
+        return scheduledPanel;
+    }
+
+    private void refreshScheduledPanel() {
+        if (scheduledModel == null) return;
+        scheduledModel.setRowCount(0);
+        for (ScheduledTransfer st : extService.getScheduledTransfers(currentUser.getId())) {
+            String status = st.isExecuted() ?
+                    (st.isRecurringMonthly() ? "Cancelled" : "Completed") :
+                    (st.isRecurringMonthly() ? "Recurring" : "Pending");
+            boolean canCancel = !st.isExecuted();
+            scheduledModel.addRow(new Object[] {
+                    st.getId(),
+                    st.getToAccountNumber(),
+                    String.format("$%,.2f", st.getAmount()),
+                    st.getScheduledDate().toString(),
+                    st.isRecurringMonthly() ? "Yes" : "No",
+                    status,
+                    canCancel ? "Cancel" : ""
+            });
+        }
+    }
+
+    private class CancelScheduledEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JButton btn;
+        private String transferId;
+
+        CancelScheduledEditor(JTable table) {
+            btn = new JButton("Cancel");
+            btn.setFont(Theme.FONT_SMALL);
+            btn.setBackground(Theme.DANGER);
+            btn.setForeground(Color.WHITE);
+            btn.setFocusPainted(false);
+            btn.addActionListener(e -> {
+                if (transferId != null) {
+                    int conf = JOptionPane.showConfirmDialog(CustomerDashboard.this,
+                            "Cancel this scheduled transfer?",
+                            "Confirm", JOptionPane.YES_NO_OPTION);
+                    if (conf == JOptionPane.YES_OPTION) {
+                        extService.cancelScheduledTransfer(transferId);
+                        refreshScheduledPanel();
+                    }
+                }
+                fireEditingStopped();
+            });
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable t, Object val,
+                boolean sel, int row, int col) {
+            transferId = (val != null && !val.toString().isEmpty()) ? (String) t.getValueAt(row, 0) : null;
+            btn.setText(val != null && !val.toString().isEmpty() ? "Cancel" : "");
+            btn.setEnabled(val != null && !val.toString().isEmpty());
+            return btn;
+        }
+
+        @Override
+        public Object getCellEditorValue() { return btn.getText(); }
     }
 
     // ===================== HELPERS =====================
