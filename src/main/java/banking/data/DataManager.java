@@ -199,6 +199,10 @@ public class DataManager {
         saveAll();
     }
 
+    public void addTransactionsWithoutSave(List<Transaction> txs) {
+        transactions.addAll(txs);
+    }
+
     // ===================== LOAN OPERATIONS =====================
     public List<Loan> getAllLoans() {
         return new ArrayList<>(loans);
@@ -305,6 +309,10 @@ public class DataManager {
     public void addBeneficiary(Beneficiary b) {
         beneficiaries.add(b);
         saveAll();
+    }
+
+    public void addBeneficiaryWithoutSave(Beneficiary b) {
+        beneficiaries.add(b);
     }
 
     public void removeBeneficiary(String id) {

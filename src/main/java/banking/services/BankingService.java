@@ -120,7 +120,7 @@ public class BankingService {
                 Transaction.TransactionType.TRANSFER_IN, amount, to.getBalance(),
                 "Transfer from " + from.getAccountNumber() + " — " + desc, from.getId());
         
-        dm.addTransactions(List.of(txOut, txIn));
+        dm.addTransactionsWithoutSave(List.of(txOut, txIn));
 
         // Save beneficiary if requested
         if (saveBeneficiary && beneficiaryName != null && !beneficiaryName.isBlank()) {
@@ -129,9 +129,11 @@ public class BankingService {
             if (!exists) {
                 Beneficiary ben = new Beneficiary(userId, beneficiaryName,
                         toAccountNumber, beneficiaryNick == null ? "" : beneficiaryNick);
-                dm.addBeneficiary(ben);
+                dm.addBeneficiaryWithoutSave(ben);
             }
         }
+
+        dm.saveAll();
 
         return TransactionResult.success(txOut, from);
     }

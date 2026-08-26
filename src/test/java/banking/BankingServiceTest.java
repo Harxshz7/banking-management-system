@@ -176,7 +176,7 @@ class BankingServiceTest {
 
         BankingService.TransactionResult result = bankingService.transfer(
                 johnSavings.getId(), janeSavings.getAccountNumber(),
-                john.getId(), 50, "test atomicity", false, null, null);
+                john.getId(), 50, "test atomicity", true, "Jane Beneficiary", "Jane");
 
         assertTrue(result.isSuccess());
         assertEquals(1, dm.getSaveAllCount(), "Transfer should trigger exactly one saveAll() call");
