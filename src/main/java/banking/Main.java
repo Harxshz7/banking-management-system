@@ -2,6 +2,10 @@ package banking;
 
 import javax.swing.SwingUtilities;
 
+import banking.services.AuthService;
+import banking.services.BankingServiceExtensions;
+import banking.ui.LoginFrame;
+import banking.ui.Theme;
 public class Main {
     public static void main(String[] args) {
         // Enable HiDPI scaling

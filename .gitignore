@@ -3,7 +3,6 @@
 
 # Maven
 /target/
-/.mvn/
 *.war
 *.ear
 
@@ -37,3 +36,7 @@ Thumbs.db
 
 # Keep local env files out
 .env
+
+# Local build and run files
+/lib/
+sources.txt
