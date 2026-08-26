@@ -165,4 +165,20 @@ class BankingServiceTest {
         int after = bankingService.getBeneficiaries(john.getId()).size();
         assertEquals(before + 1, after);
     }
+
+    // ====== transfer atomicity ======
+
+    @Test
+    @Order(9)
+    void transfer_atomicity_callsSaveAllExactlyOnce() {
+        DataManager dm = DataManager.getInstance();
+        dm.resetSaveAllCount();
+
+        BankingService.TransactionResult result = bankingService.transfer(
+                johnSavings.getId(), janeSavings.getAccountNumber(),
+                john.getId(), 50, "test atomicity", false, null, null);
+
+        assertTrue(result.isSuccess());
+        assertEquals(1, dm.getSaveAllCount(), "Transfer should trigger exactly one saveAll() call");
+    }
 }

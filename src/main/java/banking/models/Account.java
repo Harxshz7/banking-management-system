@@ -104,14 +104,7 @@ public class Account implements Serializable {
         return null;
     }
 
-    // Legacy simple withdraw
-    public boolean withdraw(double amount) {
-        if (amount > 0 && balance >= amount && !frozen) {
-            balance -= amount;
-            return true;
-        }
-        return false;
-    }
+
 
     // ===== INTEREST =====
     public double calculateMonthlyInterest() {
@@ -183,7 +176,16 @@ public class Account implements Serializable {
         return description;
     }
 
+    public boolean checkAndFixFdMaturityDate() {
+        if (type == AccountType.FIXED_DEPOSIT && fdMaturityDate == null) {
+            fdMaturityDate = (createdAt != null ? createdAt : LocalDateTime.now()).plusYears(1);
+            return true;
+        }
+        return false;
+    }
+
     public LocalDateTime getFdMaturityDate() {
+        checkAndFixFdMaturityDate();
         return fdMaturityDate;
     }
 
@@ -194,9 +196,9 @@ public class Account implements Serializable {
     public double getFixedDepositMaturityAmount() {
         if (type != AccountType.FIXED_DEPOSIT)
             return balance;
-        double years = fdMaturityDate == null ? 1.0
-                : Math.max(1.0,
-                        (double) java.time.Duration.between(createdAt, fdMaturityDate).toDays() / 365.0);
+        LocalDateTime maturity = getFdMaturityDate();
+        LocalDateTime start = createdAt != null ? createdAt : LocalDateTime.now();
+        double years = Math.max(1.0, (double) java.time.Duration.between(start, maturity).toDays() / 365.0);
         return balance + (balance * (interestRate / 100.0) * years);
     }
 

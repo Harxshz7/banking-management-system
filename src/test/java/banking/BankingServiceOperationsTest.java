@@ -92,4 +92,17 @@ class BankingServiceOperationsTest {
                 savingsAccount.getBalance(), "test", "ONLINE");
         assertFalse(result.isSuccess());
     }
+
+    // ====== createAccount uniqueness ======
+
+    @Test
+    @Order(7)
+    void createAccount_generatesUniqueNumbers() {
+        java.util.Set<String> numbers = new java.util.HashSet<>();
+        for (int i = 0; i < 50; i++) {
+            Account acc = bankingService.createAccount(john.getId(), Account.AccountType.SAVINGS, 100);
+            assertNotNull(acc);
+            assertTrue(numbers.add(acc.getAccountNumber()), "Account number collision detected!");
+        }
+    }
 }

@@ -315,6 +315,17 @@ public class DataManager {
     private void loadAll() {
         users = loadFile(USERS_FILE);
         accounts = loadFile(ACCOUNTS_FILE);
+        
+        boolean modifiedAccounts = false;
+        for (Account a : accounts) {
+            if (a.checkAndFixFdMaturityDate()) {
+                modifiedAccounts = true;
+            }
+        }
+        if (modifiedAccounts) {
+            saveFile(ACCOUNTS_FILE, accounts);
+        }
+
         transactions = loadFile(TRANSACTIONS_FILE);
         loans = loadFile(LOANS_FILE);
         beneficiaries = loadFile(BENEFICIARIES_FILE);
@@ -336,7 +347,12 @@ public class DataManager {
         }
     }
 
+    private int saveAllCount = 0;
+    public int getSaveAllCount() { return saveAllCount; }
+    public void resetSaveAllCount() { saveAllCount = 0; }
+
     public void saveAll() {
+        saveAllCount++;
         saveFile(USERS_FILE, users);
         saveFile(ACCOUNTS_FILE, accounts);
         saveFile(TRANSACTIONS_FILE, transactions);
