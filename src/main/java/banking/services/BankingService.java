@@ -102,20 +102,17 @@ public class BankingService {
         if (error != null) return TransactionResult.fail(error);
 
         to.deposit(amount);
-        dm.updateAccount(from);
-        dm.updateAccount(to);
 
         String desc = (description == null || description.isBlank()) ? "Funds Transfer" : description;
 
         Transaction txOut = new Transaction(from.getId(), userId,
                 Transaction.TransactionType.TRANSFER_OUT, amount, from.getBalance(),
                 "Transfer to " + to.getAccountNumber() + " — " + desc, to.getId());
-        dm.addTransaction(txOut);
-
         Transaction txIn = new Transaction(to.getId(), to.getUserId(),
                 Transaction.TransactionType.TRANSFER_IN, amount, to.getBalance(),
                 "Transfer from " + from.getAccountNumber() + " — " + desc, from.getId());
-        dm.addTransaction(txIn);
+        
+        dm.addTransactions(List.of(txOut, txIn));
 
         // Save beneficiary if requested
         if (saveBeneficiary && beneficiaryName != null && !beneficiaryName.isBlank()) {
