@@ -40,12 +40,11 @@ public class LoanService {
         Account acc = dm.findAccountById(loan.getCreditAccountId()).orElse(null);
         if (acc != null) {
             acc.deposit(loan.getPrincipalAmount());
-            dm.updateAccount(acc);
 
             Transaction tx = new Transaction(acc.getId(), loan.getUserId(),
                     Transaction.TransactionType.LOAN_DISBURSEMENT, loan.getPrincipalAmount(),
                     acc.getBalance(), loan.getTypeDisplay() + " Disbursed", null);
-            dm.addTransaction(tx);
+            dm.addTransactionWithoutSave(tx);
         }
 
         dm.updateLoan(loan);

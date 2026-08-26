@@ -190,6 +190,15 @@ public class DataManager {
         saveAll();
     }
 
+    public void addTransactionWithoutSave(Transaction tx) {
+        transactions.add(tx);
+    }
+
+    public void addTransactions(List<Transaction> txs) {
+        transactions.addAll(txs);
+        saveAll();
+    }
+
     // ===================== LOAN OPERATIONS =====================
     public List<Loan> getAllLoans() {
         return new ArrayList<>(loans);
