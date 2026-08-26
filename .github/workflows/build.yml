@@ -22,10 +22,10 @@ jobs:
           cache: maven
 
       - name: Build with Maven
-        run: ./mvnw clean compile --no-transfer-progress
+        run: mvn clean compile --no-transfer-progress
 
       - name: Run tests
-        run: ./mvnw test --no-transfer-progress
+        run: mvn test --no-transfer-progress
 
       - name: Package
-        run: ./mvnw package -DskipTests --no-transfer-progress
+        run: mvn package -DskipTests --no-transfer-progress
