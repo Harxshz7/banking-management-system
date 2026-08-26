@@ -772,9 +772,18 @@ public class CustomerDashboard extends JFrame {
         panel.setBackground(Theme.BG_DARK);
         panel.setBorder(BorderFactory.createEmptyBorder(28, 28, 28, 28));
 
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+
         JLabel title = new JLabel("Transaction History");
         title.setFont(Theme.FONT_TITLE);
         title.setForeground(Theme.TEXT_PRIMARY);
+
+        GradientButton exportBtn = new GradientButton("Download Statement", Theme.ACCENT_TEAL, Theme.ACCENT_BLUE);
+        exportBtn.addActionListener(e -> exportStatement());
+
+        topPanel.add(title, BorderLayout.WEST);
+        topPanel.add(exportBtn, BorderLayout.EAST);
 
         String[] cols = { "Date & Time", "Account No", "Type", "Amount", "Balance After", "Description" };
         historyModel = new DefaultTableModel(cols, 0) {
@@ -821,7 +830,7 @@ public class CustomerDashboard extends JFrame {
         scroll.getViewport().setBackground(Theme.BG_SURFACE);
         scroll.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
-        panel.add(title, BorderLayout.NORTH);
+        panel.add(topPanel, BorderLayout.NORTH);
         panel.add(scroll, BorderLayout.CENTER);
 
         refreshHistoryPanel();
@@ -847,6 +856,57 @@ public class CustomerDashboard extends JFrame {
                     String.format("$%,.2f", tx.getBalanceAfter()),
                     tx.getDescription()
             });
+        }
+    }
+
+    private void exportStatement() {
+        if (!verifyPin()) return;
+
+        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JComboBox<String> accountBox = new JComboBox<>(getAccountLabels(bankingService.getUserAccounts(currentUser.getId())));
+        JTextField fromDate = new JTextField();
+        JTextField toDate = new JTextField();
+
+        panel.add(new JLabel("Select Account:"));
+        panel.add(accountBox);
+        panel.add(new JLabel("From (YYYY-MM-DD):"));
+        panel.add(fromDate);
+        panel.add(new JLabel("To (YYYY-MM-DD):"));
+        panel.add(toDate);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Export Statement", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            String sel = (String) accountBox.getSelectedItem();
+            if (sel == null) return;
+            String accId = getAccountIdFromLabel(sel);
+
+            LocalDate from = null;
+            LocalDate to = null;
+            try {
+                if (!fromDate.getText().trim().isEmpty()) {
+                    from = LocalDate.parse(fromDate.getText().trim());
+                }
+                if (!toDate.getText().trim().isEmpty()) {
+                    to = LocalDate.parse(toDate.getText().trim());
+                }
+            } catch (Exception e) {
+                showError("Invalid date format. Use YYYY-MM-DD.");
+                return;
+            }
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Save Statement");
+            fileChooser.setSelectedFile(new java.io.File("Statement_" + getAccountNumberFromId(accId) + ".pdf"));
+            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    StatementService statementService = new StatementService(bankingService);
+                    byte[] pdf = statementService.generateStatementPdf(accId, currentUser.getId(), from, to);
+                    java.nio.file.Files.write(fileChooser.getSelectedFile().toPath(), pdf);
+                    JOptionPane.showMessageDialog(this, "Statement saved successfully.");
+                } catch (Exception e) {
+                    showError("Error generating statement: " + e.getMessage());
+                }
+            }
         }
     }
 

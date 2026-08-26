@@ -43,6 +43,20 @@ public class AuthService {
         return dm.addUser(newUser);
     }
 
+    public User loginStateless(String username, String password) {
+        Optional<User> user = dm.findUserByUsername(username);
+        if (user.isEmpty() || !user.get().isActive()) return null;
+
+        User u = user.get();
+        if (!PasswordUtil.check(password, u.getPassword())) return null;
+
+        if (u.needsPasswordMigration()) {
+            u.hashAndSetPassword(password);
+        }
+        dm.saveAll();
+        return u;
+    }
+
     public void logout() {
         currentUser = null;
     }

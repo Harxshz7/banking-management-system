@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  bankpro-api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - bankpro_data:/app/banking_data
+
+volumes:
+  bankpro_data:
