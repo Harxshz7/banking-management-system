@@ -28,9 +28,9 @@ public class Account implements Serializable {
     private String description;
     private LocalDateTime fdMaturityDate; // For FD accounts
 
-    public Account(String userId, AccountType type, double initialBalance) {
+    public Account(String userId, AccountType type, double initialBalance, String accountNumber) {
         this.id = UUID.randomUUID().toString();
-        this.accountNumber = generateAccountNumber();
+        this.accountNumber = accountNumber;
         this.userId = userId;
         this.type = type;
         this.balance = initialBalance;
@@ -62,10 +62,7 @@ public class Account implements Serializable {
         }
     }
 
-    private String generateAccountNumber() {
-        long num = (long) (Math.random() * 9_000_000_000L) + 1_000_000_000L;
-        return String.valueOf(num);
-    }
+
 
     // ===== Reset daily limits if new day =====
     private void checkDailyReset() {

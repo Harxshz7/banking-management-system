@@ -72,14 +72,14 @@ public class DataManager {
         users.add(jane);
 
         // John's accounts
-        Account johnSavings = new Account(john.getId(), Account.AccountType.SAVINGS, 8500.00);
-        Account johnChecking = new Account(john.getId(), Account.AccountType.CHECKING, 3200.00);
-        Account johnFD = new Account(john.getId(), Account.AccountType.FIXED_DEPOSIT, 25000.00);
+        Account johnSavings = new Account(john.getId(), Account.AccountType.SAVINGS, 8500.00, "1000000001");
+        Account johnChecking = new Account(john.getId(), Account.AccountType.CHECKING, 3200.00, "1000000002");
+        Account johnFD = new Account(john.getId(), Account.AccountType.FIXED_DEPOSIT, 25000.00, "1000000003");
         accounts.addAll(List.of(johnSavings, johnChecking, johnFD));
 
         // Jane's accounts
-        Account janeSavings = new Account(jane.getId(), Account.AccountType.SAVINGS, 12000.00);
-        Account janeChecking = new Account(jane.getId(), Account.AccountType.CHECKING, 4500.00);
+        Account janeSavings = new Account(jane.getId(), Account.AccountType.SAVINGS, 12000.00, "1000000004");
+        Account janeChecking = new Account(jane.getId(), Account.AccountType.CHECKING, 4500.00, "1000000005");
         accounts.addAll(List.of(janeSavings, janeChecking));
 
         // Opening transactions

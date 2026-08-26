@@ -66,7 +66,10 @@ public class LoanService {
             return BankingService.TransactionResult.fail("Loan not found or not active.");
 
         double outstanding = loan.getOutstandingAmount();
-        double payAmount = Math.min(amount, outstanding);
+        if (amount > outstanding) {
+            return BankingService.TransactionResult.fail(String.format("Amount exceeds outstanding balance of $%,.2f", outstanding));
+        }
+        double payAmount = amount;
 
         // Debit from account
         Account acc = dm.findAccountById(debitAccountId).orElse(null);

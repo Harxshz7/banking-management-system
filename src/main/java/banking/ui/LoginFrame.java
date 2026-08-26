@@ -234,6 +234,17 @@ public class LoginFrame extends JFrame {
         }
         User user = authService.login(username, password);
         if (user != null) {
+            if (user.needsPinMigration()) {
+                while (true) {
+                    String newPin = PinDialog.promptNewPin(this);
+                    if (newPin != null) {
+                        user.hashAndSetPin(newPin);
+                        banking.data.DataManager.getInstance().saveAll();
+                        break;
+                    }
+                    JOptionPane.showMessageDialog(this, "You must set a new PIN to continue.", "PIN Required", JOptionPane.WARNING_MESSAGE);
+                }
+            }
             dispose();
             if (user.isAdmin()) {
                 new AdminDashboard(authService);

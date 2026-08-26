@@ -16,9 +16,17 @@ public class BankingService {
 
     // ====================== ACCOUNT OPERATIONS ======================
 
+    private String generateAccountNumber() {
+        String num;
+        do {
+            num = String.valueOf((long) (Math.random() * 9_000_000_000L) + 1_000_000_000L);
+        } while (dm.findAccountByNumber(num).isPresent());
+        return num;
+    }
+
     public Account createAccount(String userId, Account.AccountType type, double initialDeposit) {
         if (initialDeposit < 0) return null;
-        Account account = new Account(userId, type, initialDeposit);
+        Account account = new Account(userId, type, initialDeposit, generateAccountNumber());
         dm.addAccount(account);
         Transaction tx = new Transaction(account.getId(), userId,
                 Transaction.TransactionType.ACCOUNT_OPENED, initialDeposit,
