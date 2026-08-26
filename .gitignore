@@ -40,3 +40,7 @@ Thumbs.db
 # Local build and run files
 /lib/
 sources.txt
+
+# SQLite Database and backups
+*.db
+/banking_data_migrated_backup/

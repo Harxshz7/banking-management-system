@@ -38,16 +38,18 @@ public class LoanService {
 
         // Credit the loan amount to the account
         Account acc = dm.findAccountById(loan.getCreditAccountId()).orElse(null);
-        if (acc != null) {
-            acc.deposit(loan.getPrincipalAmount());
+        dm.executeInTransaction(() -> {
+            if (acc != null) {
+                acc.deposit(loan.getPrincipalAmount());
+                dm.updateAccount(acc);
 
-            Transaction tx = new Transaction(acc.getId(), loan.getUserId(),
-                    Transaction.TransactionType.LOAN_DISBURSEMENT, loan.getPrincipalAmount(),
-                    acc.getBalance(), loan.getTypeDisplay() + " Disbursed", null);
-            dm.addTransactionWithoutSave(tx);
-        }
-
-        dm.updateLoan(loan);
+                Transaction tx = new Transaction(acc.getId(), loan.getUserId(),
+                        Transaction.TransactionType.LOAN_DISBURSEMENT, loan.getPrincipalAmount(),
+                        acc.getBalance(), loan.getTypeDisplay() + " Disbursed", null);
+                dm.addTransactionWithoutSave(tx);
+            }
+            dm.updateLoan(loan);
+        });
         return true;
     }
 
@@ -78,17 +80,24 @@ public class LoanService {
         String withdrawErr = acc.tryWithdraw(payAmount);
         if (withdrawErr != null) return BankingService.TransactionResult.fail(withdrawErr);
 
-        dm.updateAccount(acc);
-        loan.makeRepayment(payAmount);
-        dm.updateLoan(loan);
+        dm.executeInTransaction(() -> {
+            dm.updateAccount(acc);
+            loan.makeRepayment(payAmount);
+            dm.updateLoan(loan);
 
-        Transaction tx = new Transaction(acc.getId(), userId,
+            Transaction tx = new Transaction(acc.getId(), userId,
+                    Transaction.TransactionType.LOAN_REPAYMENT, payAmount, acc.getBalance(),
+                    "Loan Repayment — " + loan.getTypeDisplay() + 
+                    " | Remaining: " + loan.getFormattedOutstanding(), null);
+            dm.addTransactionWithoutSave(tx);
+        });
+
+        // Create a transient transaction for the return result since we don't return from inside executeInTransaction
+        Transaction retTx = new Transaction(acc.getId(), userId,
                 Transaction.TransactionType.LOAN_REPAYMENT, payAmount, acc.getBalance(),
                 "Loan Repayment — " + loan.getTypeDisplay() + 
                 " | Remaining: " + loan.getFormattedOutstanding(), null);
-        dm.addTransaction(tx);
-
-        return BankingService.TransactionResult.success(tx, acc);
+        return BankingService.TransactionResult.success(retTx, acc);
     }
 
     public List<Loan> getUserLoans(String userId) { return dm.getLoansByUser(userId); }

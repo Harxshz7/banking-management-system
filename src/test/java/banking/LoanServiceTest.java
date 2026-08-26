@@ -20,6 +20,7 @@ class LoanServiceTest {
 
     @BeforeAll
     static void resetData() {
+        banking.data.DatabaseManager.setDbUrl("jdbc:sqlite::memory:");
         DataManager.resetInstance();
         DataManager.getInstance();
     }

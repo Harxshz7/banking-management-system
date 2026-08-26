@@ -27,11 +27,13 @@ public class BankingService {
     public Account createAccount(String userId, Account.AccountType type, double initialDeposit) {
         if (initialDeposit < 0) return null;
         Account account = new Account(userId, type, initialDeposit, generateAccountNumber());
-        dm.addAccount(account);
-        Transaction tx = new Transaction(account.getId(), userId,
-                Transaction.TransactionType.ACCOUNT_OPENED, initialDeposit,
-                initialDeposit, "Account Opened with initial deposit", null);
-        dm.addTransaction(tx);
+        dm.executeInTransaction(() -> {
+            dm.addAccount(account);
+            Transaction tx = new Transaction(account.getId(), userId,
+                    Transaction.TransactionType.ACCOUNT_OPENED, initialDeposit,
+                    initialDeposit, "Account Opened with initial deposit", null);
+            dm.addTransactionWithoutSave(tx);
+        });
         return account;
     }
 
@@ -54,13 +56,15 @@ public class BankingService {
         if (account.isFrozen()) return TransactionResult.fail("Account is frozen. Contact the bank.");
 
         account.deposit(amount);
-        dm.updateAccount(account);
-
         String desc = (description == null || description.isBlank()) ? "Cash Deposit" : description;
         Transaction tx = new Transaction(accountId, userId,
                 Transaction.TransactionType.DEPOSIT, amount, account.getBalance(), desc, null);
         tx.setChannel(channel != null ? channel : "ONLINE");
-        dm.addTransaction(tx);
+
+        dm.executeInTransaction(() -> {
+            dm.updateAccount(account);
+            dm.addTransactionWithoutSave(tx);
+        });
 
         return TransactionResult.success(tx, account);
     }
@@ -78,13 +82,15 @@ public class BankingService {
         String error = account.tryWithdraw(amount);
         if (error != null) return TransactionResult.fail(error);
 
-        dm.updateAccount(account);
-
         String desc = (description == null || description.isBlank()) ? "Cash Withdrawal" : description;
         Transaction tx = new Transaction(accountId, userId,
                 Transaction.TransactionType.WITHDRAWAL, amount, account.getBalance(), desc, null);
         tx.setChannel(channel != null ? channel : "ONLINE");
-        dm.addTransaction(tx);
+
+        dm.executeInTransaction(() -> {
+            dm.updateAccount(account);
+            dm.addTransactionWithoutSave(tx);
+        });
 
         return TransactionResult.success(tx, account);
     }
@@ -119,21 +125,23 @@ public class BankingService {
         Transaction txIn = new Transaction(to.getId(), to.getUserId(),
                 Transaction.TransactionType.TRANSFER_IN, amount, to.getBalance(),
                 "Transfer from " + from.getAccountNumber() + " — " + desc, from.getId());
-        
-        dm.addTransactionsWithoutSave(List.of(txOut, txIn));
 
-        // Save beneficiary if requested
-        if (saveBeneficiary && beneficiaryName != null && !beneficiaryName.isBlank()) {
-            boolean exists = dm.getBeneficiariesByUser(userId).stream()
-                    .anyMatch(b -> b.getAccountNumber().equals(toAccountNumber));
-            if (!exists) {
-                Beneficiary ben = new Beneficiary(userId, beneficiaryName,
-                        toAccountNumber, beneficiaryNick == null ? "" : beneficiaryNick);
-                dm.addBeneficiaryWithoutSave(ben);
+        dm.executeInTransaction(() -> {
+            dm.updateAccount(from);
+            dm.updateAccount(to);
+            dm.addTransactionWithoutSave(txOut);
+            dm.addTransactionWithoutSave(txIn);
+
+            if (saveBeneficiary && beneficiaryName != null && !beneficiaryName.isBlank()) {
+                boolean exists = dm.getBeneficiariesByUser(userId).stream()
+                        .anyMatch(b -> b.getAccountNumber().equals(toAccountNumber));
+                if (!exists) {
+                    Beneficiary ben = new Beneficiary(userId, beneficiaryName,
+                            toAccountNumber, beneficiaryNick == null ? "" : beneficiaryNick);
+                    dm.addBeneficiaryWithoutSave(ben);
+                }
             }
-        }
-
-        dm.saveAll();
+        });
 
         return TransactionResult.success(txOut, from);
     }
@@ -147,11 +155,13 @@ public class BankingService {
         double interest = account.applyMonthlyInterest();
         if (interest <= 0) return TransactionResult.fail("No interest applicable.");
 
-        dm.updateAccount(account);
         Transaction tx = new Transaction(accountId, userId,
                 Transaction.TransactionType.INTEREST_CREDIT, interest, account.getBalance(),
                 String.format("Monthly Interest @ %.2f%% p.a.", account.getInterestRate()), null);
-        dm.addTransaction(tx);
+        dm.executeInTransaction(() -> {
+            dm.updateAccount(account);
+            dm.addTransactionWithoutSave(tx);
+        });
         return TransactionResult.success(tx, account);
     }
 
