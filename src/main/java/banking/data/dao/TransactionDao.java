@@ -12,7 +12,7 @@ import java.util.List;
 
 public class TransactionDao {
     public void addTransaction(Transaction tx) {
-        String sql = "INSERT INTO transactions (id, receipt_number, account_id, user_id, type, amount, balance_after, description, related_account_id, timestamp, channel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT OR REPLACE INTO transactions (id, receipt_number, account_id, user_id, type, amount, balance_after, description, related_account_id, timestamp, channel) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, tx.getId());

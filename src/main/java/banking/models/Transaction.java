@@ -29,7 +29,7 @@ public class Transaction implements Serializable {
                        double amount, double balanceAfter, String description,
                        String relatedAccountId) {
         this.id = UUID.randomUUID().toString();
-        this.receiptNumber = "TXN" + System.currentTimeMillis();
+        this.receiptNumber = "TXN" + System.currentTimeMillis() + (int)(Math.random() * 10000);
         this.accountId = accountId;
         this.userId = userId;
         this.type = type;
