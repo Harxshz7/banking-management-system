@@ -36,7 +36,7 @@ public class AccountController {
     public ResponseEntity<?> deposit(@PathVariable String accountId, @RequestBody DepositRequest req, @RequestAttribute("userId") String authUserId) {
         BankingService.TransactionResult res = bankingService.deposit(accountId, authUserId, req.amount(), req.description(), "API");
         if (res != null && res.isSuccess()) {
-            return ResponseEntity.ok(res.getTransaction());
+            return ResponseEntity.ok(toTransactionDto(res.getTransaction()));
         }
         return ResponseEntity.badRequest().body(res != null ? res.getErrorMessage() : "Deposit failed");
     }
@@ -45,9 +45,25 @@ public class AccountController {
     public ResponseEntity<?> withdraw(@PathVariable String accountId, @RequestBody WithdrawRequest req, @RequestAttribute("userId") String authUserId) {
         BankingService.TransactionResult res = bankingService.withdraw(accountId, authUserId, req.amount(), req.description(), "API");
         if (res != null && res.isSuccess()) {
-            return ResponseEntity.ok(res.getTransaction());
+            return ResponseEntity.ok(toTransactionDto(res.getTransaction()));
         }
         return ResponseEntity.badRequest().body(res != null ? res.getErrorMessage() : "Withdraw failed");
+    }
+
+    private TransactionController.TransactionDto toTransactionDto(banking.models.Transaction t) {
+        return new TransactionController.TransactionDto(
+            t.getId(),
+            t.getReceiptNumber(),
+            t.getAccountId(),
+            t.getUserId(),
+            t.getType().name(),
+            t.getAmount(),
+            t.getBalanceAfter(),
+            t.getDescription(),
+            t.getRelatedAccountId(),
+            t.getTimestamp(),
+            t.getChannel()
+        );
     }
 
     @GetMapping("/{accountId}/statement")

@@ -19,7 +19,20 @@ public class TransferController {
                 req.description(), false, null, null);
         
         if (res != null && res.isSuccess()) {
-            return ResponseEntity.ok(res.getTransaction());
+            banking.models.Transaction t = res.getTransaction();
+            return ResponseEntity.ok(new TransactionController.TransactionDto(
+                t.getId(),
+                t.getReceiptNumber(),
+                t.getAccountId(),
+                t.getUserId(),
+                t.getType().name(),
+                t.getAmount(),
+                t.getBalanceAfter(),
+                t.getDescription(),
+                t.getRelatedAccountId(),
+                t.getTimestamp(),
+                t.getChannel()
+            ));
         }
         return ResponseEntity.badRequest().body(res != null ? res.getErrorMessage() : "Transfer failed");
     }
