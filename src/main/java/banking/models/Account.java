@@ -28,6 +28,10 @@ public class Account implements Serializable {
     private String description;
     private LocalDateTime fdMaturityDate; // For FD accounts
 
+    public Account(String userId, AccountType type, double initialBalance) {
+        this(userId, type, initialBalance, String.valueOf((long) (Math.random() * 9_000_000_000L) + 1_000_000_000L));
+    }
+
     public Account(String userId, AccountType type, double initialBalance, String accountNumber) {
         this.id = UUID.randomUUID().toString();
         this.accountNumber = accountNumber;
