@@ -77,6 +77,18 @@ public class User implements Serializable {
         return transactionPin;
     }
 
+    public int getCreditScore() {
+        return creditScore;
+    }
+
+    public String getOtpCode() {
+        return otpCode;
+    }
+
+    public LocalDateTime getOtpExpiry() {
+        return otpExpiry;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
